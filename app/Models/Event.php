@@ -34,6 +34,16 @@ class Event extends Model
         $query->where('status', EventStatus::Published);
     }
 
+    /** Events this user may manage in the admin panel: all for staff, assigned ones for a PO. */
+    public function scopeManageableBy(Builder $query, User $user): void
+    {
+        if ($user->isStaff()) {
+            return;
+        }
+
+        $query->whereHas('officers', fn (Builder $q) => $q->whereKey($user->getKey()));
+    }
+
     /** Project Officers assigned to this event. */
     public function officers(): BelongsToMany
     {

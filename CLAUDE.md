@@ -8,7 +8,7 @@ Sistem manajemen event multi-event, single vendor, terintegrasi payment gateway.
 
 ## Aturan Domain
 
-- **Role:** `ceo` (superadmin), `operation`, `project_officer` (scoped per event), `user`. Cek otorisasi PO selalu terhadap event spesifik, jangan hanya cek nama role.
+- **Role:** `ceo` (superadmin), `operation`, `project_officer` (scoped per event), `user`. Cek otorisasi PO selalu terhadap event spesifik, jangan hanya cek nama role. PO = user yang tercatat di pivot `event_user` (`$user->isProjectOfficerOf($event)`), bukan role spatie. Resource Filament untuk data milik event wajib membatasi `getEloquentQuery()` dengan `Event::manageableBy($user)` (atau `whereHas('event', ...)` untuk data turunannya) dan punya Policy.
 - **Uang:** simpan nominal sebagai integer (rupiah, tanpa desimal). Jangan pakai float.
 - **Status pembayaran hanya berubah dari webhook gateway** yang sudah diverifikasi signature-nya, atau dari pengecekan status ke API gateway. Jangan pernah percaya redirect/callback di sisi browser.
 - **Webhook harus idempotent:** simpan event ID/transaction ID dari gateway, abaikan duplikat.
