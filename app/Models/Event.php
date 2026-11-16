@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['name', 'slug', 'description', 'location', 'starts_at', 'ends_at', 'poster_path', 'status'])]
 class Event extends Model
@@ -42,6 +43,11 @@ class Event extends Model
         }
 
         $query->whereHas('officers', fn (Builder $q) => $q->whereKey($user->getKey()));
+    }
+
+    public function ticketTypes(): HasMany
+    {
+        return $this->hasMany(TicketType::class);
     }
 
     /** Project Officers assigned to this event. */

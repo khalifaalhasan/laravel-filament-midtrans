@@ -29,8 +29,14 @@ class DatabaseSeeder extends Seeder
             'name' => 'Demo Project Officer',
             'email' => 'po@example.com',
         ]);
-        Event::factory()->published()->create(['name' => 'Tech Conference', 'slug' => 'tech-conference'])
-            ->officers()->attach($po);
-        Event::factory()->published()->create(['name' => 'Music Festival', 'slug' => 'music-festival']);
+        $tech = Event::factory()->published()->create(['name' => 'Tech Conference', 'slug' => 'tech-conference']);
+        $tech->officers()->attach($po);
+        $music = Event::factory()->published()->create(['name' => 'Music Festival', 'slug' => 'music-festival']);
+
+        $tech->ticketTypes()->createMany([
+            ['name' => 'Regular', 'price' => 150_000, 'quota' => 100],
+            ['name' => 'VIP', 'price' => 500_000, 'quota' => 20],
+        ]);
+        $music->ticketTypes()->create(['name' => 'Festival Pass', 'price' => 250_000, 'quota' => 500]);
     }
 }
