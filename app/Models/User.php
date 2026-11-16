@@ -9,6 +9,7 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -35,6 +36,23 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
+        return $this->isStaff() || $this->managedEvents()->exists();
+    }
+
+    /** CEO and Operation work across all events. */
+    public function isStaff(): bool
+    {
         return $this->hasAnyRole(['ceo', 'operation']);
+    }
+
+    /** Events where this user is Project Officer. */
+    public function managedEvents(): BelongsToMany
+    {
+        return $this->belongsToMany(Event::class)->withTimestamps();
+    }
+
+    public function isProjectOfficerOf(Event $event): bool
+    {
+        return $this->managedEvents()->whereKey($event->getKey())->exists();
     }
 }
