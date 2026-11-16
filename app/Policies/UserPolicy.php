@@ -31,4 +31,9 @@ class UserPolicy
     {
         return $user->hasRole('ceo') && $user->isNot($model);
     }
+
+    public function deleteAny(User $user): bool
+    {
+        return $user->hasRole('ceo');
+    }
 }
