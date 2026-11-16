@@ -41,10 +41,12 @@ composer install
 cp .env.example .env
 php artisan key:generate
 touch database/database.sqlite
-php artisan migrate
+php artisan migrate --seed
 npm install && npm run build
 composer run dev   # server, queue, dan vite sekaligus
 ```
+
+Panel admin ada di `/admin`. Akun demo: `admin@example.com` / `password`.
 
 ## Status
 
