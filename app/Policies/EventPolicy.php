@@ -33,6 +33,11 @@ class EventPolicy
         return $user->hasRole('ceo');
     }
 
+    public function deleteAny(User $user): bool
+    {
+        return $user->hasRole('ceo');
+    }
+
     public function assignOfficers(User $user, Event $event): bool
     {
         return $user->hasRole('ceo');
