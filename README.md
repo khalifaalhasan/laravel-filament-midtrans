@@ -48,7 +48,7 @@ composer run dev   # server, queue, dan vite sekaligus
 
 Isi `MIDTRANS_SERVER_KEY` dan `MIDTRANS_CLIENT_KEY` di `.env` dengan key **sandbox** dari [dashboard sandbox Midtrans](https://dashboard.sandbox.midtrans.com) (Settings > Access Keys).
 
-Panel admin ada di `/admin`. Akun demo: `admin@example.com` / `password`.
+Panel admin ada di `/admin`. Akun demo (password semua `password`): `ceo@example.com`, `operation@example.com`, `user@example.com`.
 
 ## Status
 

@@ -36,11 +36,9 @@ class UserFactory extends Factory
     /**
      * Indicate that the model's email address should be unverified.
      */
-    public function admin(): static
+    public function withRole(string $role): static
     {
-        return $this->state(fn (array $attributes) => [
-            'is_admin' => true,
-        ]);
+        return $this->afterCreating(fn (User $user) => $user->assignRole($role));
     }
 
     public function unverified(): static
