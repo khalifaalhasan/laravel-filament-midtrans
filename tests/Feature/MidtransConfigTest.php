@@ -11,5 +11,4 @@ class MidtransConfigTest extends TestCase
         $this->assertFalse(config('midtrans.is_production'));
         $this->assertStringContainsString('sandbox', config('midtrans.snap_url'));
     }
-
 }
