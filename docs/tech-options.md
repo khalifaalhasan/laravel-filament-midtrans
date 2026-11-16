@@ -4,7 +4,7 @@ Kriteria utama: **pakai modul komunitas yang sudah matang** untuk auth, RBAC, ad
 
 ## A. Opsi Stack Sistem
 
-### Opsi 1: Laravel 12 + Filament (rekomendasi)
+### Opsi 1: Laravel 13 + Filament (rekomendasi)
 
 | Kebutuhan | Modul siap pakai |
 |---|---|
@@ -71,7 +71,7 @@ Hal yang perlu dicek sebelum memilih: fee per metode (terutama QRIS & VA), lama 
 
 **Diputuskan 2026-11-16:**
 
-- **Stack:** Laravel 12 + Filament (admin panel), `spatie/laravel-permission`, `spatie/laravel-activitylog`.
+- **Stack:** Laravel 13 + Filament (admin panel), `spatie/laravel-permission`, `spatie/laravel-activitylog`.
 - **Payment gateway:** Midtrans Snap, **sandbox saja** (project tugas, tidak sampai production).
 - **Alasan:** paling cepat ke MVP, akun sandbox Midtrans tanpa verifikasi dokumen, popup Snap + Payment Simulator memudahkan demo.
 - **Webhook lokal:** pakai tunnel (`ngrok`/`cloudflared`), dengan fallback cek status ke API Midtrans setelah redirect.
