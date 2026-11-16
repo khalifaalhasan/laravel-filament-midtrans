@@ -32,6 +32,20 @@ Sistem manajemen event **multi-event, single vendor**: satu penyelenggara (perus
 - Dashboard & laporan per event dan agregat
 - Audit log untuk aksi sensitif (refund, ubah harga, ubah role)
 
+## Menjalankan Lokal
+
+Butuh PHP 8.3+, Composer, dan Node 20+. Database default-nya SQLite.
+
+```sh
+composer install
+cp .env.example .env
+php artisan key:generate
+touch database/database.sqlite
+php artisan migrate
+npm install && npm run build
+composer run dev   # server, queue, dan vite sekaligus
+```
+
 ## Status
 
-Tahap perencanaan. Stack: **Laravel 12 + Filament + Midtrans Snap (sandbox)**, lihat [docs/tech-options.md](docs/tech-options.md). Backlog ada di GitHub Issues (label `epic` dan `task`).
+Tahap perencanaan. Stack: **Laravel 13 + Filament + Midtrans Snap (sandbox)**, lihat [docs/tech-options.md](docs/tech-options.md). Backlog ada di GitHub Issues (label `epic` dan `task`).

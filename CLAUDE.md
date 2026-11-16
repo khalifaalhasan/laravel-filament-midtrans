@@ -4,7 +4,7 @@ Panduan untuk agent AI yang bekerja di repo ini.
 
 ## Konteks
 
-Sistem manajemen event multi-event, single vendor, terintegrasi payment gateway. Baca [README.md](README.md) untuk tujuan dan role. Opsi teknologi ada di [docs/tech-options.md](docs/tech-options.md). **Stack:** Laravel 12 + Filament, payment gateway Midtrans Snap (sandbox saja). Backlog di GitHub Issues: kerjakan per issue `task`, satu issue satu PR.
+Sistem manajemen event multi-event, single vendor, terintegrasi payment gateway. Baca [README.md](README.md) untuk tujuan dan role. Opsi teknologi ada di [docs/tech-options.md](docs/tech-options.md). **Stack:** Laravel 13 + Filament, payment gateway Midtrans Snap (sandbox saja). Backlog di GitHub Issues: kerjakan per issue `task`, satu issue satu PR.
 
 ## Aturan Domain
 
