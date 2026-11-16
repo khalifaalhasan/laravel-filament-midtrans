@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Event;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -23,5 +24,13 @@ class DatabaseSeeder extends Seeder
                 'email' => "{$role}@example.com",
             ]);
         }
+
+        $po = User::factory()->withRole('user')->create([
+            'name' => 'Demo Project Officer',
+            'email' => 'po@example.com',
+        ]);
+        Event::factory()->published()->create(['name' => 'Tech Conference', 'slug' => 'tech-conference'])
+            ->officers()->attach($po);
+        Event::factory()->published()->create(['name' => 'Music Festival', 'slug' => 'music-festival']);
     }
 }

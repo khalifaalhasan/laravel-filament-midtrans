@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[Fillable(['name', 'slug', 'description', 'location', 'starts_at', 'ends_at', 'poster_path', 'status'])]
 class Event extends Model
@@ -31,6 +32,12 @@ class Event extends Model
     public function scopePublished(Builder $query): void
     {
         $query->where('status', EventStatus::Published);
+    }
+
+    /** Project Officers assigned to this event. */
+    public function officers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class)->withTimestamps();
     }
 
     public function getRouteKeyName(): string
