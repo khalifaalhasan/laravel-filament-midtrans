@@ -96,4 +96,39 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_phone_is_normalized_on_update(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => '0812 3456 7890',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('+6281234567890', $user->refresh()->phone);
+    }
+
+    public function test_user_with_orders_cannot_delete_account(): void
+    {
+        $order = \App\Models\Order::factory()->create();
+
+        $this->actingAs($order->user)
+            ->from('/profile')
+            ->delete('/profile', ['password' => 'password'])
+            ->assertSessionHasErrorsIn('userDeletion', 'password')
+            ->assertRedirect('/profile');
+
+        $this->assertNotNull($order->user->fresh());
+    }
+
+    public function test_account_page_uses_public_layout(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get('/profile')
+            ->assertSee('Akun Saya')
+            ->assertSee('Ganti Password')
+            ->assertSee('Hapus Akun');
+    }
 }
