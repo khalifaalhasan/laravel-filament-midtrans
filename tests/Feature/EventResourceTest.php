@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Enums\EventCategory;
 use App\Enums\EventStatus;
+use App\Enums\Region;
 use App\Filament\Resources\Events\Pages\CreateEvent;
 use App\Filament\Resources\Events\Pages\EditEvent;
 use App\Filament\Resources\Events\Pages\ListEvents;
@@ -26,6 +28,8 @@ class EventResourceTest extends TestCase
                 'slug' => 'demo-fest',
                 'location' => 'Bandung',
                 'status' => EventStatus::Published,
+                'category' => EventCategory::Musik,
+                'region' => Region::JawaBarat,
                 'starts_at' => now()->addMonth(),
                 'ends_at' => now()->addMonth()->addHours(5),
             ])
@@ -33,6 +37,7 @@ class EventResourceTest extends TestCase
             ->assertHasNoFormErrors();
 
         $this->assertSame(EventStatus::Published, Event::firstWhere('slug', 'demo-fest')->status);
+        $this->assertSame(Region::JawaBarat, Event::firstWhere('slug', 'demo-fest')->region);
     }
 
     public function test_ends_at_must_be_after_starts_at(): void

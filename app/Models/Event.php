@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\EventCategory;
 use App\Enums\EventStatus;
 use App\Enums\OrderStatus;
+use App\Enums\Region;
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'slug', 'description', 'location', 'starts_at', 'ends_at', 'poster_path', 'status'])]
+#[Fillable(['name', 'slug', 'description', 'location', 'starts_at', 'ends_at', 'poster_path', 'status', 'category', 'region', 'organizer_name', 'organizer_logo_path', 'banner_path', 'is_featured'])]
 class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -20,6 +22,9 @@ class Event extends Model
 
     protected $attributes = [
         'status' => 'draft',
+        'category' => 'musik',
+        'region' => 'jabodetabek',
+        'is_featured' => false,
     ];
 
     protected function casts(): array
@@ -28,6 +33,9 @@ class Event extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
             'status' => EventStatus::class,
+            'category' => EventCategory::class,
+            'region' => Region::class,
+            'is_featured' => 'boolean',
         ];
     }
 
