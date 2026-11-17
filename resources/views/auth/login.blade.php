@@ -31,6 +31,11 @@
             <p class="text-center text-sm text-gray-600">Belum punya akun? <a href="{{ route('register') }}" class="font-medium text-brand-700 hover:underline">Daftar</a></p>
         </form>
     @else
+        @error('email')
+            <p role="alert" class="mt-4 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-danger">
+                <x-heroicon-s-exclamation-circle class="h-5 w-5 shrink-0" aria-hidden="true" />{{ $message }}
+            </p>
+        @enderror
         <form method="POST" action="{{ route('login') }}" class="mt-6 space-y-6">
             @csrf
             <div>
@@ -40,9 +45,7 @@
                     <a href="{{ route('login') }}" class="ml-3 shrink-0 font-medium text-brand-700 hover:underline">Ganti</a>
                 </div>
                 <input type="hidden" name="email" value="{{ $email }}">
-                @error('email')
-                    <p class="mt-1 text-xs text-danger">{{ $message }}</p>
-                @enderror
+
             </div>
             <x-ui.input name="password" type="password" label="Password" required autofocus autocomplete="current-password" placeholder="Password" />
             <div class="flex items-center justify-between text-sm">

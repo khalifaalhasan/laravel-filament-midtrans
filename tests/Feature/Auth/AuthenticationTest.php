@@ -97,4 +97,38 @@ class AuthenticationTest extends TestCase
         $this->post('/login', ['email' => $user->email, 'password' => 'password'])
             ->assertRedirect(url('/events/tech-conference'));
     }
+
+    public function test_login_shows_success_message_and_account_in_header(): void
+    {
+        $user = User::factory()->create(['name' => 'Rina']);
+
+        $this->followingRedirects()
+            ->post('/login', ['email' => $user->email, 'password' => 'password'])
+            ->assertSee('Berhasil masuk. Selamat datang, Rina!')
+            ->assertSee('Menu akun Rina')
+            ->assertDontSee('>Masuk</a>', false);
+    }
+
+    public function test_wrong_password_shows_indonesian_alert(): void
+    {
+        $user = User::factory()->create();
+
+        $this->followingRedirects()->from('/login')
+            ->post('/login', ['email' => $user->email, 'password' => 'salah'])
+            ->assertSee('role="alert"', false)
+            ->assertSee('Email atau password salah.');
+    }
+
+    public function test_logout_message(): void
+    {
+        $this->actingAs(User::factory()->create())->followingRedirects()->post('/logout')->assertSee('Kamu sudah keluar.');
+    }
+
+    public function test_checkout_header_shows_logged_in_account(): void
+    {
+        $event = \App\Models\Event::factory()->published()->create();
+
+        $this->get(route('checkout.tickets', $event))->assertSee('>Masuk</a>', false);
+        $this->actingAs(User::factory()->create(['name' => 'Rina']))->get(route('checkout.tickets', $event))->assertSee('Rina')->assertDontSee('>Masuk</a>', false);
+    }
 }

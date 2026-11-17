@@ -116,6 +116,7 @@
         </header>
 
         <main id="main" @class(['flex-1', 'mx-auto w-full max-w-6xl px-4 py-8' => $contained])>
+            <x-ui.flash @class(['mb-6', 'mx-auto mt-6 max-w-6xl' => ! $contained]) />
             {{ $slot }}
         </main>
 

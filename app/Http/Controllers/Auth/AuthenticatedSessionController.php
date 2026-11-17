@@ -44,7 +44,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('events.index', absolute: false));
+        return redirect()->intended(route('events.index', absolute: false))
+            ->with('status', 'Berhasil masuk. Selamat datang, '.$request->user()->name.'!');
     }
 
     /**
@@ -58,6 +59,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/')->with('status', 'Kamu sudah keluar.');
     }
 }

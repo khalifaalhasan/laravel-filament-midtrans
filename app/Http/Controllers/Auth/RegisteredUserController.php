@@ -53,6 +53,7 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect()->intended(route('events.index', absolute: false));
+        return redirect()->intended(route('events.index', absolute: false))
+            ->with('status', 'Akun berhasil dibuat. Selamat datang, '.$user->name.'!');
     }
 }
