@@ -14,6 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Gateway webhooks are server-to-server and authenticated by signature instead of CSRF.
         $middleware->preventRequestForgery(except: ['webhooks/*']);
+
+        // Logged-in users opening /login or /register used to land on the home page silently; say why.
+        $middleware->redirectUsersTo(function (Request $request) {
+            $request->session()->flash('status', 'Kamu sudah masuk sebagai '.$request->user()->name.'.');
+
+            return route('events.index');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
