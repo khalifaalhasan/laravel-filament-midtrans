@@ -90,26 +90,29 @@
                     <div class="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-card bg-brand-50 p-4">
                         <div>
                             <p class="font-medium">{{ $ticket->name }}</p>
+                            @if ($ticket->isBundle())
+                                <x-ui.badge variant="soft" class="mt-1"><x-heroicon-o-gift class="h-3.5 w-3.5" aria-hidden="true" />Bundle {{ $ticket->bundle_size }} tiket</x-ui.badge>
+                            @endif
                             <p class="text-sm text-gray-600">
-                                @if ($ticket->remaining() === 0)
+                                @if ($ticket->availableUnits() === 0)
                                     <x-ui.badge variant="danger">Sold Out</x-ui.badge>
                                 @elseif (! $ticket->isOnSale())
                                     {{ $ticket->sale_starts_at?->isFuture() ? 'Dijual mulai '.$ticket->sale_starts_at->translatedFormat('d M Y, H:i') : 'Penjualan ditutup' }}
                                 @else
-                                    Sisa {{ $ticket->remaining() }} tiket
+                                    Sisa {{ $ticket->availableUnits() }} {{ $ticket->isBundle() ? 'paket' : 'tiket' }}
                                 @endif
                             </p>
                         </div>
                         <div class="flex items-center gap-3">
                             <p class="font-semibold">{{ rupiah($ticket->price) }}</p>
-                            @if ($ticket->isOnSale() && $ticket->remaining() > 0)
+                            @if ($ticket->isOnSale() && $ticket->availableUnits() > 0)
                                 @auth
                                     <form method="POST" action="{{ route('checkout.store', $event) }}" class="flex items-center gap-2">
                                         @csrf
                                         <input type="hidden" name="ticket_type_id" value="{{ $ticket->id }}">
                                         <label for="qty-{{ $ticket->id }}" class="sr-only">Jumlah {{ $ticket->name }}</label>
                                         <select id="qty-{{ $ticket->id }}" name="quantity" class="rounded-md border-gray-200 text-sm">
-                                            @foreach (range(1, min(App\Models\Order::MAX_TICKETS, $ticket->remaining())) as $n)
+                                            @foreach (range(1, min(App\Models\Order::MAX_TICKETS, $ticket->availableUnits())) as $n)
                                                 <option value="{{ $n }}">{{ $n }}</option>
                                             @endforeach
                                         </select>

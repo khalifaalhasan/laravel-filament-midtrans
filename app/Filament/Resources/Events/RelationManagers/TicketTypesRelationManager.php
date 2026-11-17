@@ -7,6 +7,7 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
@@ -33,11 +34,22 @@ class TicketTypesRelationManager extends RelationManager
                     ->integer()
                     ->minValue(0)
                     ->required(),
+                TextInput::make('bundle_size')
+                    ->label('Isi per pembelian')
+                    ->helperText('1 = tiket biasa. Isi lebih dari 1 untuk bundling (mis. 4 = paket 4 tiket).')
+                    ->integer()
+                    ->minValue(1)
+                    ->default(1)
+                    ->required(),
                 TextInput::make('quota')
-                    ->label('Kuota')
+                    ->label('Kuota (jumlah tiket)')
                     ->integer()
                     ->minValue(fn (?TicketType $record) => max(1, $record?->sold ?? 0))
                     ->required(),
+                Textarea::make('description')
+                    ->label('Deskripsi')
+                    ->rows(2)
+                    ->columnSpanFull(),
                 DateTimePicker::make('sale_starts_at')
                     ->label('Mulai dijual'),
                 DateTimePicker::make('sale_ends_at')
@@ -55,6 +67,9 @@ class TicketTypesRelationManager extends RelationManager
                 TextColumn::make('price')
                     ->label('Harga')
                     ->formatStateUsing(fn (int $state) => Number::currency($state, 'IDR', 'id', 0)),
+                TextColumn::make('bundle_size')
+                    ->label('Isi')
+                    ->formatStateUsing(fn (int $state) => $state > 1 ? "Bundle {$state}" : 'Satuan'),
                 TextColumn::make('quota')
                     ->label('Kuota'),
                 TextColumn::make('sold')

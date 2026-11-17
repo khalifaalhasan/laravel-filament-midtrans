@@ -57,7 +57,7 @@ class Event extends Model
     /** Adds `min_price`: cheapest ticket that still has seats left (null when sold out or no tickets). */
     public function scopeWithStartingPrice(Builder $query): void
     {
-        $query->withMin(['ticketTypes as min_price' => fn (Builder $q) => $q->whereColumn('sold', '<', 'quota')], 'price');
+        $query->withMin(['ticketTypes as min_price' => fn (Builder $q) => $q->whereRaw('sold + bundle_size <= quota')], 'price');
     }
 
     /** Safe HTML for rich-text fields (description, terms). Legacy plain text keeps its line breaks. */

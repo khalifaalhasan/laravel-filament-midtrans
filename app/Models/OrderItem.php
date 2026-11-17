@@ -18,9 +18,16 @@ class OrderItem extends Model
     {
         return [
             'quantity' => 'integer',
+            'bundle_size' => 'integer',
             'unit_price' => 'integer',
             'subtotal' => 'integer',
         ];
+    }
+
+    /** Seats held and e-tickets issued for this line. */
+    public function seats(): int
+    {
+        return $this->quantity * $this->bundle_size;
     }
 
     public function order(): BelongsTo

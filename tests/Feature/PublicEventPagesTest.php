@@ -164,4 +164,12 @@ class PublicEventPagesTest extends TestCase
             ->assertSee('Tiket habis')
             ->assertSee('aria-disabled="true"', false);
     }
+
+    public function test_bundle_badge_and_units_on_detail_page(): void
+    {
+        $event = Event::factory()->published()->create();
+        TicketType::factory()->for($event)->create(['name' => 'Paket Squad', 'bundle_size' => 4, 'quota' => 9]);
+
+        $this->get(route('events.show', $event))->assertSee('Bundle 4 tiket')->assertSee('Sisa 2 paket');
+    }
 }
