@@ -24,8 +24,7 @@
                 @endforeach
             </ul>
             <div class="mt-6 text-center">
-                {{-- shortcut: points at Jelajah once #79 adds the events.explore route --}}
-                <x-ui.button variant="soft" :href="Route::has('events.explore') ? route('events.explore') : '#'">Lihat Lainnya</x-ui.button>
+                <x-ui.button variant="soft" :href="route('events.explore')">Lihat Lainnya</x-ui.button>
             </div>
         @endif
     </section>
