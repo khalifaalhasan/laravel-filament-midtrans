@@ -19,4 +19,19 @@ enum EventCategory: string implements HasLabel
     {
         return ucfirst($this->value);
     }
+
+    /** Heroicon (solid) closest to the reference category icons. */
+    public function icon(): string
+    {
+        return match ($this) {
+            self::Musik => 'heroicon-s-musical-note',
+            self::Pameran => 'heroicon-s-building-library',
+            self::Teater => 'heroicon-s-film',
+            self::Olahraga => 'heroicon-s-flag',
+            self::Wisata => 'heroicon-s-map-pin',
+            self::Talkshow => 'heroicon-s-microphone',
+            self::Workshop => 'heroicon-s-presentation-chart-bar',
+            self::Kompetisi => 'heroicon-s-trophy',
+        };
+    }
 }

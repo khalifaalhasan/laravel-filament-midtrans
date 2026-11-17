@@ -106,4 +106,13 @@ class PublicEventPagesTest extends TestCase
             ->assertSee('Laris Manis')
             ->assertViewHas('bestSellers', fn ($events) => $events->pluck('name')->all() === ['Big Hit', 'Small Hit']);
     }
+
+    public function test_home_lists_all_categories(): void
+    {
+        $response = $this->get('/')->assertSee('Kategori Event');
+
+        foreach (\App\Enums\EventCategory::cases() as $category) {
+            $response->assertSee($category->getLabel());
+        }
+    }
 }
