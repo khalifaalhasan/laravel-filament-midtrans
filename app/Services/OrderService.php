@@ -105,12 +105,23 @@ class OrderService
 
             // Issued inside the same transaction as the status change, so it happens exactly once.
             if ($to === OrderStatus::Paid) {
+                $holders = $order->attendees ?? [];
+                $seat = 0;
                 foreach ($order->items as $item) {
-                    $order->tickets()->createMany(array_map(fn () => [
-                        'event_id' => $order->event_id,
-                        'ticket_type_id' => $item->ticket_type_id,
-                        'code' => 'TKT-'.Str::upper(Str::random(10)),
-                    ], range(1, $item->seats())));
+                    foreach (range(1, $item->seats()) as $_) {
+                        $holder = $holders[$seat++] ?? [];
+                        $order->tickets()->create([
+                            'event_id' => $order->event_id,
+                            'ticket_type_id' => $item->ticket_type_id,
+                            'code' => 'TKT-'.Str::upper(Str::random(10)),
+                            'holder_name' => $holder['name'] ?? $order->buyer_name,
+                            'holder_id_type' => $holder['id_type'] ?? null,
+                            'holder_id_number' => $holder['id_number'] ?? null,
+                            'holder_email' => $holder['email'] ?? null,
+                            'holder_gender' => $holder['gender'] ?? null,
+                            'holder_phone' => $holder['phone'] ?? null,
+                        ]);
+                    }
                 }
             }
 

@@ -30,6 +30,12 @@ class Ticket extends Model
         return $this->belongsTo(Event::class);
     }
 
+    /** Identity numbers are personal data: staff screens only show the last 4 characters. */
+    public function maskedIdNumber(): ?string
+    {
+        return $this->holder_id_number ? str_repeat('•', max(0, strlen($this->holder_id_number) - 4)).substr($this->holder_id_number, -4) : null;
+    }
+
     public function qrSvg(int $size = 200): string
     {
         return (string) QrCode::format('svg')->size($size)->margin(1)->generate($this->code);
