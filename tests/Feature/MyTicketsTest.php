@@ -71,4 +71,21 @@ class MyTicketsTest extends TestCase
     {
         $this->actingAs(User::factory()->create())->get(route('my-tickets'))->assertSee('Belum ada tiket aktif')->assertSee('Jelajah event');
     }
+
+    public function test_order_detail_shows_items_method_status_and_resume_button(): void
+    {
+        $order = Order::factory()->create(['buyer_name' => 'Budi', 'buyer_email' => 'budi@contoh.com', 'payment_method' => \App\Enums\PaymentMethod::Qris, 'snap_token' => 'tok']);
+        $this->mock(\App\Payments\PaymentGateway::class, fn ($m) => $m->shouldReceive('getStatus')->andReturnNull());
+
+        $this->actingAs($order->user)->get(route('orders.show', $order))
+            ->assertSee($order->code)
+            ->assertSee('Menunggu pembayaran')
+            ->assertSee('QRIS')
+            ->assertSee('Total Bayar')
+            ->assertSee('Data Pemesan')
+            ->assertSee(route('checkout.pay', $order), false);
+
+        $order->update(['expires_at' => now()->subMinute()]);
+        $this->get(route('orders.show', $order))->assertSee('Kedaluwarsa')->assertDontSee('Lanjutkan pembayaran');
+    }
 }
