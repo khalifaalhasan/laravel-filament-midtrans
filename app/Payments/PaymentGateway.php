@@ -16,6 +16,9 @@ interface PaymentGateway
     /** Ask the provider for the current status; null when it has no transaction for this order yet. */
     public function getStatus(Order $order): ?PaymentUpdate;
 
+    /** Stop the current attempt so its payment instructions can no longer be paid. No-op if the gateway never saw it. */
+    public function cancelCharge(Order $order): void;
+
     /** Refund the full order amount. Throws PaymentGatewayException on failure. */
     public function refund(Order $order, string $reason): PaymentUpdate;
 }

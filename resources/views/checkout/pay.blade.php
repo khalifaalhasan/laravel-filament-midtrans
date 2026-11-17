@@ -54,6 +54,7 @@
                 </dl>
 
                 <x-ui.button class="mt-6 w-full" x-on:click="pay()">Bayar Sekarang</x-ui.button>
+                <a href="{{ route('checkout.payment', $order) }}" class="mt-3 block text-center text-sm font-medium text-brand-700 hover:underline">Ubah metode pembayaran</a>
                 <p class="mt-3 text-xs text-gray-600">
                     Halaman ini memeriksa status pembayaran otomatis. Setelah pembayaran terkonfirmasi, kamu akan diarahkan ke e-ticket.
                     <button type="button" class="font-medium text-brand-700 underline" x-on:click="check()">Cek sekarang</button>

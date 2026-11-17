@@ -13,7 +13,7 @@ Sistem manajemen event multi-event, single vendor, terintegrasi payment gateway.
 - **Status pembayaran hanya berubah dari webhook gateway** yang sudah diverifikasi signature-nya, atau dari pengecekan status ke API gateway. Jangan pernah percaya redirect/callback di sisi browser.
 - **Webhook harus idempotent:** simpan event ID/transaction ID dari gateway, abaikan duplikat.
 - **Kuota tiket:** kurangi kuota dalam transaksi DB dengan lock (atau reservasi dengan expiry) untuk mencegah overselling.
-- **Payment gateway di balik interface/adapter** (`PaymentGateway`: `createCharge`, `verifyWebhook`, `getStatus`, `refund`) agar bisa ganti provider.
+- **Payment gateway di balik interface/adapter** (`PaymentGateway`: `createCharge`, `cancelCharge`, `verifyWebhook`, `getStatus`, `refund`). Order ke gateway memakai `Order::gatewayReference()` (berubah saat ganti metode); notifikasi dari referensi lama hanya diterima kalau statusnya lunas agar bisa ganti provider.
 - Aksi sensitif (refund, ubah harga, ubah role, ubah kredensial gateway) wajib dicatat di audit log.
 
 ## Desain

@@ -92,4 +92,12 @@ class MidtransGatewayTest extends TestCase
         $this->assertSame(Order::RESERVATION_MINUTES, $params['expiry']['duration']);
         $this->assertLessThanOrEqual(50, mb_strlen($params['item_details'][0]['name']));
     }
+
+    public function test_snap_uses_current_attempt_reference(): void
+    {
+        $order = Order::factory()->create();
+        $order->update(['gateway_reference' => $order->code.'-XY9Z']);
+
+        $this->assertSame($order->code.'-XY9Z', $this->gateway->snapParams($order)['transaction_details']['order_id']);
+    }
 }
