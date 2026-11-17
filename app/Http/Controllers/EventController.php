@@ -12,7 +12,8 @@ class EventController extends Controller
     {
         return view('home', [
             'featured' => Event::upcoming()->where('is_featured', true)->whereNotNull('banner_path')->orderBy('starts_at')->limit(7)->get(),
-            'upcoming' => Event::upcoming()->withMin('ticketTypes as min_price', 'price')->orderBy('starts_at')->limit(8)->get(),
+            'recommended' => Event::upcoming()->withStartingPrice()->orderByDesc('is_featured')->orderBy('starts_at')->limit(10)->get(),
+            'upcoming' => Event::upcoming()->withStartingPrice()->orderBy('starts_at')->limit(8)->get(),
         ]);
     }
 

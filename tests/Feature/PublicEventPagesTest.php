@@ -69,4 +69,24 @@ class PublicEventPagesTest extends TestCase
         $this->assertSame('04 - 05 Desember 2026', $sameMonth->dateRangeLabel());
         $this->assertSame('28 November - 02 Desember 2026', $crossMonth->dateRangeLabel());
     }
+
+    public function test_starting_price_skips_sold_out_ticket_types(): void
+    {
+        $event = Event::factory()->published()->create();
+        TicketType::factory()->for($event)->create(['price' => 50000, 'quota' => 10])->forceFill(['sold' => 10])->save();
+        TicketType::factory()->for($event)->create(['price' => 90000, 'quota' => 10]);
+        $soldOut = Event::factory()->published()->create();
+        TicketType::factory()->for($soldOut)->create(['price' => 10000, 'quota' => 1])->forceFill(['sold' => 1])->save();
+
+        $this->assertSame(90000, (int) Event::withStartingPrice()->find($event->id)->min_price);
+        $this->assertNull(Event::withStartingPrice()->find($soldOut->id)->min_price);
+    }
+
+    public function test_recommended_section_lists_featured_first(): void
+    {
+        Event::factory()->published()->create(['name' => 'Soon Regular', 'starts_at' => now()->addDay(), 'ends_at' => now()->addDay()->addHours(3)]);
+        Event::factory()->published()->create(['name' => 'Later Featured', 'is_featured' => true, 'starts_at' => now()->addMonth(), 'ends_at' => now()->addMonth()->addHours(3)]);
+
+        $this->get('/')->assertSeeInOrder(['Rekomendasi Event', 'Later Featured', 'Soon Regular']);
+    }
 }
