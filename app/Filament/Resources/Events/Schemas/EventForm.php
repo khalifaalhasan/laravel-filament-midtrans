@@ -4,12 +4,14 @@ namespace App\Filament\Resources\Events\Schemas;
 
 use App\Enums\EventCategory;
 use App\Enums\EventStatus;
+use App\Enums\Facility;
 use App\Enums\Region;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
@@ -29,8 +31,27 @@ class EventForm
                     ->required()
                     ->alphaDash()
                     ->unique(ignoreRecord: true),
-                Textarea::make('description')
+                RichEditor::make('description')
+                    ->label('Deskripsi')
+                    ->toolbarButtons([['bold', 'italic', 'underline', 'link'], ['h2', 'h3'], ['bulletList', 'orderedList'], ['undo', 'redo']])
                     ->columnSpanFull(),
+                RichEditor::make('terms')
+                    ->label('Syarat & Ketentuan')
+                    ->toolbarButtons([['bold', 'italic', 'underline'], ['bulletList', 'orderedList'], ['undo', 'redo']])
+                    ->columnSpanFull(),
+                CheckboxList::make('facilities')
+                    ->label('Fasilitas')
+                    ->options(Facility::class)
+                    ->columns(4)
+                    ->columnSpanFull(),
+                TextInput::make('instagram_url')
+                    ->label('Instagram')
+                    ->url()
+                    ->prefixIcon('heroicon-o-link'),
+                TextInput::make('tiktok_url')
+                    ->label('TikTok')
+                    ->url()
+                    ->prefixIcon('heroicon-o-link'),
                 TextInput::make('location')
                     ->required(),
                 Select::make('status')

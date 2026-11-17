@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\EventCategory;
 use App\Enums\EventStatus;
+use App\Enums\Facility;
 use App\Enums\OrderStatus;
 use App\Enums\Region;
 use App\Models\Event;
@@ -44,13 +45,19 @@ class HomeCatalogueSeeder extends Seeder
     /** Paid orders (2 tickets each) added so "Laris Manis" has a clear ranking. */
     public const BEST_SELLERS = ['Konser Akustik Pantai' => 4, 'Senandung Senja Fest' => 3, 'Lari Pagi 10K Surabaya' => 2, 'Weekend Hardcore' => 1];
 
+    private const TERMS = '<ol><li>Tiket resmi hanya dijual melalui platform ini.</li><li>Satu e-ticket berlaku untuk satu orang.</li><li>Maksimal pembelian 5 tiket dalam 1 transaksi.</li><li>Tiket tidak dapat dialihkan atau dikembalikan, kecuali event dibatalkan penyelenggara.</li><li>Wajib membawa e-ticket dan kartu identitas asli (KTP/SIM/Paspor) saat penukaran.</li><li>Dilarang membawa senjata tajam, minuman beralkohol, dan obat-obatan terlarang.</li></ol><p><strong>Pembelian tiket berarti pembeli telah membaca dan menyetujui syarat &amp; ketentuan ini.</strong></p>';
+
     public function run(OrderService $orders): void
     {
         foreach (self::CATALOGUE as $i => [$name, $category, $region, $organizer, $inDays, $days, $featured, $tickets]) {
             $startsAt = now()->addDays($inDays)->setTime(14, 0);
             $event = Event::updateOrCreate(['slug' => Str::slug($name)], [
                 'name' => $name,
-                'description' => "{$name} hadir untuk kamu. Info lengkap, jadwal, dan tiket tersedia di halaman ini.",
+                'description' => "<p><strong><em>{$name}</em></strong></p><p>{$name} hadir untuk kamu bersama {$organizer}. Siapkan dirimu untuk pengalaman yang seru, aman, dan berkesan. Info lengkap, jadwal, dan tiket tersedia di halaman ini.</p>",
+                'terms' => self::TERMS,
+                'facilities' => array_slice(Facility::cases(), 0, 3 + $i % 5),
+                'instagram_url' => 'https://instagram.com/'.Str::slug($organizer, ''),
+                'tiktok_url' => $i % 2 ? null : 'https://tiktok.com/@'.Str::slug($organizer, ''),
                 'location' => $region->getLabel(),
                 'status' => EventStatus::Published,
                 'category' => $category,
