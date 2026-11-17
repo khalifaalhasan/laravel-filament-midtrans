@@ -89,4 +89,21 @@ class PublicEventPagesTest extends TestCase
 
         $this->get('/')->assertSeeInOrder(['Rekomendasi Event', 'Later Featured', 'Soon Regular']);
     }
+
+    public function test_best_sellers_ranked_by_paid_tickets(): void
+    {
+        $service = app(\App\Services\OrderService::class);
+        $sell = function (string $name, int $qty) use ($service) {
+            $event = Event::factory()->published()->create(['name' => $name, 'poster_path' => 'posters/x.svg']);
+            $order = $service->reserve(\App\Models\User::factory()->create(), TicketType::factory()->for($event)->create(['quota' => 50]), $qty);
+            $service->transition($order, \App\Enums\OrderStatus::Paid);
+        };
+        $sell('Small Hit', 1);
+        $sell('Big Hit', 5);
+        Event::factory()->published()->create(['name' => 'No Sales', 'poster_path' => 'posters/y.svg']);
+
+        $this->get('/')
+            ->assertSee('Laris Manis')
+            ->assertViewHas('bestSellers', fn ($events) => $events->pluck('name')->all() === ['Big Hit', 'Small Hit']);
+    }
 }
