@@ -131,4 +131,22 @@ class AuthenticationTest extends TestCase
         $this->get(route('checkout.tickets', $event))->assertSee('>Masuk</a>', false);
         $this->actingAs(User::factory()->create(['name' => 'Rina']))->get(route('checkout.tickets', $event))->assertSee('Rina')->assertDontSee('>Masuk</a>', false);
     }
+
+    public function test_already_logged_in_user_is_told_why_login_redirects_home(): void
+    {
+        $this->actingAs(User::factory()->create(['name' => 'Rina']))
+            ->followingRedirects()
+            ->get('/login')
+            ->assertSee('Kamu sudah masuk sebagai Rina.');
+    }
+
+    public function test_expired_form_shows_friendly_419_page(): void
+    {
+        $this->app['router']->post('/_test/419', fn () => abort(419));
+
+        $this->post('/_test/419')
+            ->assertStatus(419)
+            ->assertSee('Halaman sudah kedaluwarsa')
+            ->assertSee('Coba lagi');
+    }
 }
