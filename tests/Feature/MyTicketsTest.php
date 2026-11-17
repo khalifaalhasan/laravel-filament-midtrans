@@ -88,4 +88,23 @@ class MyTicketsTest extends TestCase
         $order->update(['expires_at' => now()->subMinute()]);
         $this->get(route('orders.show', $order))->assertSee('Kedaluwarsa')->assertDontSee('Lanjutkan pembayaran');
     }
+
+    public function test_transaction_history_lists_all_own_orders_with_status_filter(): void
+    {
+        $user = User::factory()->create();
+        $paid = Order::factory()->for($user)->for(\App\Models\Event::factory()->create(['name' => 'Paid Fest']))->create();
+        app(\App\Services\OrderService::class)->transition($paid, OrderStatus::Paid);
+        Order::factory()->for($user)->for(\App\Models\Event::factory()->create(['name' => 'Cancelled Fest']))->create(['status' => OrderStatus::Cancelled]);
+        Order::factory()->for(\App\Models\Event::factory()->create(['name' => 'Someone Else Fest']))->create();
+
+        $this->actingAs($user)->get('/')->assertSee('Riwayat Transaksi')->assertSee(route('transactions'), false);
+
+        $this->get(route('transactions'))
+            ->assertOk()
+            ->assertSee('Paid Fest')->assertSee('Cancelled Fest')->assertSee('Dibatalkan')
+            ->assertDontSee('Someone Else Fest')
+            ->assertSee(route('orders.show', $paid), false);
+
+        $this->get(route('transactions', ['status' => 'paid']))->assertSee('Paid Fest')->assertDontSee('Cancelled Fest');
+    }
 }
