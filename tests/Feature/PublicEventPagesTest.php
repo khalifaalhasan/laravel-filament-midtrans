@@ -97,7 +97,7 @@ class PublicEventPagesTest extends TestCase
         $service = app(\App\Services\OrderService::class);
         $sell = function (string $name, int $qty) use ($service) {
             $event = Event::factory()->published()->create(['name' => $name, 'poster_path' => 'posters/x.svg']);
-            $order = $service->reserve(\App\Models\User::factory()->create(), TicketType::factory()->for($event)->create(['quota' => 50]), $qty);
+            $order = $service->reserve(\App\Models\User::factory()->create(), [TicketType::factory()->for($event)->create(['quota' => 50])->id => $qty]);
             $service->transition($order, \App\Enums\OrderStatus::Paid);
         };
         $sell('Small Hit', 1);

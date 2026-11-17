@@ -11,7 +11,7 @@
         <h1 class="text-xl font-semibold mt-1">{{ $order->event->name }}</h1>
 
         <dl class="mt-4 space-y-2 text-sm">
-            <div class="flex justify-between"><dt>Tiket</dt><dd>{{ $order->ticketType->name }} × {{ $order->quantity }}</dd></div>
+            <div class="flex justify-between gap-4"><dt>Tiket</dt><dd class="text-right">{{ $order->itemsSummary() }}</dd></div>
             <div class="flex justify-between"><dt>Total</dt><dd class="font-semibold">{{ Number::currency($order->total, 'IDR', 'id', 0) }}</dd></div>
             <div class="flex justify-between"><dt>Status</dt><dd>{{ $order->status->label() }}</dd></div>
             @if ($pending)
@@ -38,6 +38,9 @@
                     <li class="border border-gray-200 rounded-lg p-4 text-center">
                         <div class="mx-auto w-48" role="img" aria-label="QR tiket {{ $ticket->code }}">{!! $ticket->qrSvg(192) !!}</div>
                         <p class="mt-2 font-mono text-sm">{{ $ticket->code }}</p>
+                        @if ($ticket->ticketType)
+                            <p class="text-xs font-medium">{{ $ticket->ticketType->name }}</p>
+                        @endif
                         <p class="text-xs text-gray-600">{{ $ticket->checked_in_at ? 'Sudah check-in '.$ticket->checked_in_at->translatedFormat('d M Y, H:i') : 'Belum check-in' }}</p>
                     </li>
                 @endforeach

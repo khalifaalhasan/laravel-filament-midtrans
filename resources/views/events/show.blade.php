@@ -109,7 +109,7 @@
                                         <input type="hidden" name="ticket_type_id" value="{{ $ticket->id }}">
                                         <label for="qty-{{ $ticket->id }}" class="sr-only">Jumlah {{ $ticket->name }}</label>
                                         <select id="qty-{{ $ticket->id }}" name="quantity" class="rounded-md border-gray-200 text-sm">
-                                            @foreach (range(1, min(App\Http\Controllers\CheckoutController::MAX_QUANTITY, $ticket->remaining())) as $n)
+                                            @foreach (range(1, min(App\Models\Order::MAX_TICKETS, $ticket->remaining())) as $n)
                                                 <option value="{{ $n }}">{{ $n }}</option>
                                             @endforeach
                                         </select>

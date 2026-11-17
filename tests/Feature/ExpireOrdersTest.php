@@ -17,9 +17,9 @@ class ExpireOrdersTest extends TestCase
         $ticket = TicketType::factory()->create(['quota' => 10]);
         $ticket->forceFill(['sold' => 4])->save();
 
-        $overdue = Order::factory()->for($ticket)->create(['quantity' => 2, 'expires_at' => now()->subMinutes(10)]);
-        $inGrace = Order::factory()->for($ticket)->create(['quantity' => 1, 'expires_at' => now()->subMinutes(2)]);
-        $paid = Order::factory()->for($ticket)->create(['quantity' => 1, 'expires_at' => now()->subMinutes(10), 'status' => OrderStatus::Paid]);
+        $overdue = Order::factory()->withItem($ticket, 2)->create(['expires_at' => now()->subMinutes(10)]);
+        $inGrace = Order::factory()->withItem($ticket, 1)->create(['expires_at' => now()->subMinutes(2)]);
+        $paid = Order::factory()->withItem($ticket, 1)->create(['expires_at' => now()->subMinutes(10), 'status' => OrderStatus::Paid]);
 
         $this->artisan('orders:expire')->expectsOutput('Expired 1 order(s).')->assertSuccessful();
 

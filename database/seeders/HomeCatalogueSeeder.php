@@ -82,7 +82,7 @@ class HomeCatalogueSeeder extends Seeder
                 continue;
             }
             foreach (User::factory()->withRole('user')->count($count)->create() as $buyer) {
-                $order = $orders->reserve($buyer, $event->ticketTypes()->orderBy('id')->first(), 2);
+                $order = $orders->reserve($buyer, [$event->ticketTypes()->orderBy('id')->value('id') => 2]);
                 $orders->transition($order, OrderStatus::Paid, attributes: ['paid_at' => now(), 'payment_type' => 'qris']);
             }
         }

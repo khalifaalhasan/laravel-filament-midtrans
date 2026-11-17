@@ -17,6 +17,9 @@ class Order extends Model
     /** Seats are held this long; the gateway charge uses the same expiry. */
     public const RESERVATION_MINUTES = 30;
 
+    /** Most ticket lines (purchase units) one order may hold. */
+    public const MAX_TICKETS = 5;
+
     protected $guarded = ['id'];
 
     protected $attributes = [
@@ -26,8 +29,6 @@ class Order extends Model
     protected function casts(): array
     {
         return [
-            'quantity' => 'integer',
-            'unit_price' => 'integer',
             'total' => 'integer',
             'status' => OrderStatus::class,
             'expires_at' => 'datetime',
@@ -45,9 +46,15 @@ class Order extends Model
         return $this->belongsTo(Event::class);
     }
 
-    public function ticketType(): BelongsTo
+    public function items(): HasMany
     {
-        return $this->belongsTo(TicketType::class);
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /** "Regular × 2, VIP × 1" */
+    public function itemsSummary(): string
+    {
+        return $this->items->map(fn (OrderItem $item) => "{$item->ticketType->name} × {$item->quantity}")->join(', ');
     }
 
     public function tickets(): HasMany

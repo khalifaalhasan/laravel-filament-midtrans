@@ -10,7 +10,7 @@
                     <a href="{{ route('orders.show', $order) }}" class="flex items-center justify-between bg-white rounded-lg shadow-sm p-4 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900">
                         <div>
                             <p class="font-medium">{{ $order->event->name }}</p>
-                            <p class="text-sm text-gray-600">{{ $order->ticketType->name }} × {{ $order->quantity }} · {{ $order->event->starts_at->translatedFormat('d M Y') }}</p>
+                            <p class="text-sm text-gray-600">{{ $order->itemsSummary() }} · {{ $order->event->starts_at->translatedFormat('d M Y') }}</p>
                         </div>
                         <div class="text-right text-sm">
                             <p class="font-semibold">{{ Number::currency($order->total, 'IDR', 'id', 0) }}</p>

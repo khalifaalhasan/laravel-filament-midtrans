@@ -14,7 +14,7 @@ class TicketIssuingTest extends TestCase
 
     public function test_paid_order_issues_one_ticket_per_quantity_exactly_once(): void
     {
-        $order = Order::factory()->create(['quantity' => 3]);
+        $order = Order::factory()->withItem(\App\Models\TicketType::factory()->create(), 3)->create();
         $service = app(OrderService::class);
 
         $service->transition($order, OrderStatus::Paid);
@@ -29,7 +29,7 @@ class TicketIssuingTest extends TestCase
 
     public function test_unpaid_orders_get_no_tickets(): void
     {
-        $order = Order::factory()->create(['quantity' => 2]);
+        $order = Order::factory()->withItem(\App\Models\TicketType::factory()->create(), 2)->create();
 
         app(OrderService::class)->transition($order, OrderStatus::Expired);
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
 use App\Models\Event;
+use App\Models\Order;
 use App\Payments\PaymentGateway;
 use App\Payments\PaymentGatewayException;
 use App\Services\OrderService;
@@ -13,17 +14,16 @@ use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
-    public const MAX_QUANTITY = 5;
-
     public function store(Request $request, Event $event, OrderService $orders, PaymentGateway $gateway): RedirectResponse
     {
+        // shortcut: single ticket type per request until checkout step 1 (#85) posts several lines.
         $data = $request->validate([
             'ticket_type_id' => ['required', 'integer'],
-            'quantity' => ['required', 'integer', 'min:1', 'max:'.self::MAX_QUANTITY],
+            'quantity' => ['required', 'integer', 'min:1', 'max:'.Order::MAX_TICKETS],
         ]);
 
         $ticketType = $event->ticketTypes()->findOrFail($data['ticket_type_id']);
-        $order = $orders->reserve($request->user(), $ticketType, (int) $data['quantity']);
+        $order = $orders->reserve($request->user(), [$ticketType->id => (int) $data['quantity']]);
 
         try {
             $order->update(['snap_token' => $gateway->createCharge($order)]);
