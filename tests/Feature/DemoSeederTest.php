@@ -29,4 +29,29 @@ class DemoSeederTest extends TestCase
         $this->assertSame(5, Event::where('is_featured', true)->whereNotNull('banner_path')->count());
         Storage::disk('public')->assertExists(Event::firstWhere('slug', 'jazz-di-kebun')->poster_path);
     }
+
+    public function test_home_catalogue_seeder_is_safe_to_rerun(): void
+    {
+        Storage::fake('public');
+        $this->seed();
+        $counts = [Event::count(), \App\Models\TicketType::count(), Order::count(), User::count()];
+
+        $this->seed(\Database\Seeders\HomeCatalogueSeeder::class);
+
+        $this->assertSame($counts, [Event::count(), \App\Models\TicketType::count(), Order::count(), User::count()]);
+    }
+
+    public function test_home_catalogue_seeder_fills_an_existing_database(): void
+    {
+        Storage::fake('public');
+        $existing = Event::factory()->published()->create(['name' => 'Tech Conference', 'slug' => 'tech-conference']);
+
+        $this->seed(\Database\Seeders\HomeCatalogueSeeder::class);
+
+        $this->assertSame(16, Event::count());
+        $this->assertNotNull($existing->refresh()->banner_path);
+        $this->assertTrue($existing->is_featured);
+        $this->assertSame(['Regular', 'VIP'], $existing->ticketTypes()->orderBy('id')->pluck('name')->all());
+        $this->assertSame(10, Order::where('status', 'paid')->count());
+    }
 }
