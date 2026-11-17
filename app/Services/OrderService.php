@@ -70,6 +70,14 @@ class OrderService
                 TicketType::whereKey($order->ticket_type_id)->decrement('sold', $order->quantity);
             }
 
+            // Issued inside the same transaction as the status change, so it happens exactly once.
+            if ($to === OrderStatus::Paid) {
+                $order->tickets()->createMany(array_map(fn () => [
+                    'event_id' => $order->event_id,
+                    'code' => 'TKT-'.Str::upper(Str::random(10)),
+                ], range(1, $order->quantity)));
+            }
+
             $order->refresh();
 
             return true;
