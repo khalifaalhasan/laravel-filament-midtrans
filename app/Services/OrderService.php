@@ -135,10 +135,18 @@ class OrderService
     /** Apply a trusted gateway status (verified webhook or server-side status call). Returns whether the order changed. */
     public function applyUpdate(PaymentUpdate $update): bool
     {
-        $order = Order::firstWhere('code', $update->orderCode);
+        $order = Order::firstWhere('code', Order::codeFromReference($update->orderCode));
 
         if ($order === null) {
             Log::warning('Payment update for unknown order', ['order' => $update->orderCode]);
+
+            return false;
+        }
+
+        // An earlier attempt (before the buyer changed payment method) only matters if it was actually paid.
+        $staleAttempt = $update->orderCode !== $order->gatewayReference();
+        if ($staleAttempt && $update->status !== OrderStatus::Paid) {
+            Log::info('Ignoring update for a replaced payment attempt', ['reference' => $update->orderCode, 'status' => $update->status->value]);
 
             return false;
         }
@@ -161,9 +169,10 @@ class OrderService
             OrderStatus::Pending => false,
         };
 
-        if (! $changed && $update->status === OrderStatus::Paid && $order->refresh()->status !== OrderStatus::Paid) {
-            // shortcut: money received for an order whose seats were already released; needs manual refund until auto-handling exists
-            Log::critical('Payment received for non-pending order', ['order' => $order->code, 'status' => $order->status->value]);
+        // Money received that did not settle this order: after seats were released, or a second attempt paid twice.
+        if (! $changed && $update->status === OrderStatus::Paid && ($order->refresh()->status !== OrderStatus::Paid || $staleAttempt)) {
+            // shortcut: needs a manual refund until automatic handling exists
+            Log::critical('Payment received for non-pending order', ['order' => $order->code, 'reference' => $update->orderCode, 'status' => $order->status->value]);
         }
 
         return $changed;

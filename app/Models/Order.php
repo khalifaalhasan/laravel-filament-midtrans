@@ -67,6 +67,18 @@ class Order extends Model
         return $seats;
     }
 
+    /** order_id of the current gateway attempt. */
+    public function gatewayReference(): string
+    {
+        return $this->gateway_reference ?? $this->code;
+    }
+
+    /** Order code inside a gateway reference: "ORD-<ULID>" or "ORD-<ULID>-<attempt>". */
+    public static function codeFromReference(string $reference): string
+    {
+        return preg_match('/^(ORD-[0-9A-Z]{26})(-[0-9A-Z]+)?$/', $reference, $m) ? $m[1] : $reference;
+    }
+
     public function isAwaitingPayment(): bool
     {
         return $this->status === OrderStatus::Pending && $this->expires_at->isFuture();

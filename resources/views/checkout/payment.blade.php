@@ -45,7 +45,14 @@
                         @endforeach
                     </div>
                 </fieldset>
-                <p class="mt-4 text-xs text-gray-600">Instruksi pembayaran muncul di langkah berikutnya. Metode tidak bisa diganti setelah pembayaran dibuat.</p>
+                @if ($order->snap_token)
+                    <p role="note" class="mt-4 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                        Pembayaran dengan {{ $order->payment_method->label() }} sudah dibuat. Memilih metode lain akan membatalkan instruksi pembayaran sebelumnya.
+                        Jangan membayar dengan instruksi lama setelah mengganti metode.
+                    </p>
+                @else
+                    <p class="mt-4 text-xs text-gray-600">Instruksi pembayaran muncul di langkah berikutnya.</p>
+                @endif
             </x-ui.panel>
         </div>
 

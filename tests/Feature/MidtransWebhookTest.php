@@ -98,4 +98,33 @@ class MidtransWebhookTest extends TestCase
         $this->assertSame(OrderStatus::Expired, $this->order->refresh()->status);
         $this->assertSame(0, $this->order->items->first()->ticketType->refresh()->sold);
     }
+
+    public function test_old_attempt_expiring_does_not_cancel_the_order(): void
+    {
+        $this->order->update(['gateway_reference' => $this->order->code.'-AB12']);
+
+        // Midtrans reports the replaced attempt (order_id = order code) as expired.
+        $this->notify('expire')->assertOk();
+
+        $this->assertSame(OrderStatus::Pending, $this->order->refresh()->status);
+        $this->assertSame(2, $this->order->items->first()->ticketType->refresh()->sold);
+    }
+
+    public function test_payment_on_old_attempt_still_settles_the_order(): void
+    {
+        $this->order->update(['gateway_reference' => $this->order->code.'-AB12']);
+
+        $this->notify('settlement')->assertOk();
+
+        $this->assertSame(OrderStatus::Paid, $this->order->refresh()->status);
+    }
+
+    public function test_current_attempt_reference_is_matched(): void
+    {
+        $this->order->update(['gateway_reference' => $this->order->code.'-AB12']);
+
+        $this->notify('settlement', ['order_id' => $this->order->code.'-AB12'])->assertOk();
+
+        $this->assertSame(OrderStatus::Paid, $this->order->refresh()->status);
+    }
 }

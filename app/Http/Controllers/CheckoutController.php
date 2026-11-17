@@ -17,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -117,13 +118,33 @@ class CheckoutController extends Controller
             return $redirect;
         }
 
-        // The Midtrans transaction is created once; the method is fixed after that (no second charge on refresh or back).
+        $data = $request->validate(['payment_method' => ['required', Rule::enum(PaymentMethod::class)]], [], ['payment_method' => 'metode pembayaran']);
+        $method = PaymentMethod::from($data['payment_method']);
+
         if ($order->snap_token) {
-            return redirect()->route('checkout.pay', $order);
+            // Same method (refresh / back): keep the existing gateway transaction, never charge twice.
+            if ($order->payment_method === $method) {
+                return redirect()->route('checkout.pay', $order);
+            }
+
+            // It may already be paid with the old method; then there is nothing to change.
+            if ($orders->syncWithGateway($order)->status !== OrderStatus::Pending) {
+                return redirect()->route('orders.show', $order);
+            }
+
+            // Switching method: stop the old attempt first so its instructions cannot be paid, then start a new one.
+            try {
+                $gateway->cancelCharge($order);
+            } catch (PaymentGatewayException $e) {
+                Log::error($e->getMessage(), ['order' => $order->code]);
+
+                return back()->withErrors(['payment' => 'Metode pembayaran belum bisa diganti. Coba lagi sebentar lagi.']);
+            }
+
+            $order->update(['snap_token' => null, 'gateway_reference' => $order->code.'-'.Str::upper(Str::random(4))]);
         }
 
-        $data = $request->validate(['payment_method' => ['required', Rule::enum(PaymentMethod::class)]], [], ['payment_method' => 'metode pembayaran']);
-        $order->update(['payment_method' => $data['payment_method']]);
+        $order->update(['payment_method' => $method]);
 
         try {
             $order->update(['snap_token' => $gateway->createCharge($order)]);

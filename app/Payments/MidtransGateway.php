@@ -35,7 +35,7 @@ class MidtransGateway implements PaymentGateway
 
         return [
             'transaction_details' => [
-                'order_id' => $order->code,
+                'order_id' => $order->gatewayReference(),
                 'gross_amount' => $order->total,
             ],
             'item_details' => $order->items->map(fn ($item) => [
@@ -78,7 +78,7 @@ class MidtransGateway implements PaymentGateway
     public function getStatus(Order $order): ?PaymentUpdate
     {
         try {
-            return $this->toUpdate(Transaction::status($order->code));
+            return $this->toUpdate(Transaction::status($order->gatewayReference()));
         } catch (Throwable $e) {
             if ($e->getCode() === 404) {
                 return null;
@@ -88,17 +88,29 @@ class MidtransGateway implements PaymentGateway
         }
     }
 
+    public function cancelCharge(Order $order): void
+    {
+        try {
+            Transaction::expire($order->gatewayReference());
+        } catch (Throwable $e) {
+            // 404: the buyer never picked a method inside Snap, so there is nothing to stop.
+            if ($e->getCode() !== 404) {
+                throw new PaymentGatewayException('Gagal membatalkan transaksi Midtrans: '.$e->getMessage(), previous: $e);
+            }
+        }
+    }
+
     public function refund(Order $order, string $reason): PaymentUpdate
     {
         try {
-            Transaction::refund($order->code, [
-                'refund_key' => $order->code.'-refund',
+            Transaction::refund($order->gatewayReference(), [
+                'refund_key' => $order->gatewayReference().'-refund',
                 'amount' => $order->total,
                 'reason' => mb_substr($reason, 0, 255),
             ]);
 
             // Confirm with a fresh status call rather than trusting the refund response shape.
-            return $this->toUpdate(Transaction::status($order->code));
+            return $this->toUpdate(Transaction::status($order->gatewayReference()));
         } catch (Throwable $e) {
             throw new PaymentGatewayException('Refund Midtrans gagal: '.$e->getMessage(), previous: $e);
         }
