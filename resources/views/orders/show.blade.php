@@ -1,10 +1,5 @@
 @php($pending = $order->status === App\Enums\OrderStatus::Pending)
 <x-public-layout :title="'Pesanan '.$order->code">
-    @if ($pending && $order->snap_token)
-        <x-slot:head>
-            <script src="{{ config('midtrans.snap_url') }}" data-client-key="{{ config('midtrans.client_key') }}"></script>
-        </x-slot:head>
-    @endif
 
     <div class="max-w-lg mx-auto bg-white rounded-lg shadow-sm p-6">
         <p class="text-sm text-gray-600">Pesanan {{ $order->code }}</p>
@@ -19,15 +14,8 @@
             @endif
         </dl>
 
-        @if ($pending && $order->snap_token)
-            <x-ui.button id="pay-button" class="mt-6 w-full">Bayar sekarang</x-ui.button>
-            <script>
-                document.getElementById('pay-button').addEventListener('click', function () {
-                    // Snap callbacks only refresh the page; the status itself comes from the server.
-                    const reload = () => window.location.reload();
-                    window.snap.pay(@js($order->snap_token), { onSuccess: reload, onPending: reload, onError: reload, onClose: reload });
-                });
-            </script>
+        @if ($pending && $order->isAwaitingPayment() && auth()->user()->is($order->user))
+            <x-ui.button :href="$order->snap_token ? route('checkout.pay', $order) : route('checkout.details', $order)" class="mt-6 w-full">Lanjutkan pembayaran</x-ui.button>
         @endif
 
         @if ($order->status === App\Enums\OrderStatus::Paid)

@@ -13,6 +13,7 @@ use App\Payments\PaymentGateway;
 use App\Payments\PaymentGatewayException;
 use App\Rules\IndonesianPhone;
 use App\Services\OrderService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -118,7 +119,7 @@ class CheckoutController extends Controller
 
         // The Midtrans transaction is created once; the method is fixed after that (no second charge on refresh or back).
         if ($order->snap_token) {
-            return redirect()->route('orders.show', $order);
+            return redirect()->route('checkout.pay', $order);
         }
 
         $data = $request->validate(['payment_method' => ['required', Rule::enum(PaymentMethod::class)]], [], ['payment_method' => 'metode pembayaran']);
@@ -132,7 +133,39 @@ class CheckoutController extends Controller
             return back()->withErrors(['payment' => 'Pembayaran sedang tidak tersedia. Coba lagi sebentar lagi.']);
         }
 
-        return redirect()->route('orders.show', $order);
+        return redirect()->route('checkout.pay', $order);
+    }
+
+    /** Step 4: pay through Snap; the page polls the server, which asks the gateway (never trusts the browser). */
+    public function pay(Request $request, Order $order, OrderService $orders): View|RedirectResponse
+    {
+        $orders->syncWithGateway($order);
+
+        if ($redirect = $this->guardPending($request, $order, $orders)) {
+            return $redirect;
+        }
+
+        if (! $order->snap_token) {
+            return redirect()->route('checkout.payment', $order);
+        }
+
+        $order->load('items.ticketType', 'event');
+
+        return view('checkout.pay', ['order' => $order]);
+    }
+
+    /** Polled by step 4. Returns where to go once the order is no longer awaiting payment. */
+    public function status(Request $request, Order $order, OrderService $orders): JsonResponse
+    {
+        abort_unless($request->user()->is($order->user), 403);
+
+        $orders->syncWithGateway($order);
+
+        return response()->json([
+            'status' => $order->status->value,
+            'label' => $order->status->label(),
+            'redirect' => $order->status === OrderStatus::Pending ? null : route('orders.show', $order),
+        ]);
     }
 
     /** "Back" from step 2: give the seats back and return to step 1. */

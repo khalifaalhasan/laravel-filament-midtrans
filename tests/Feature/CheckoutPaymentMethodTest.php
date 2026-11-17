@@ -60,9 +60,9 @@ class CheckoutPaymentMethodTest extends TestCase
         $this->actingAs($this->buyer);
 
         $this->post(route('checkout.payment.store', $this->order), [])->assertSessionHasErrors('payment_method');
-        $this->post(route('checkout.payment.store', $this->order), ['payment_method' => 'e-wallet'])->assertRedirect(route('orders.show', $this->order));
+        $this->post(route('checkout.payment.store', $this->order), ['payment_method' => 'e-wallet'])->assertRedirect(route('checkout.pay', $this->order));
         // A second submit (refresh / back) must not create another gateway transaction.
-        $this->post(route('checkout.payment.store', $this->order), ['payment_method' => 'card'])->assertRedirect(route('orders.show', $this->order));
+        $this->post(route('checkout.payment.store', $this->order), ['payment_method' => 'card'])->assertRedirect(route('checkout.pay', $this->order));
 
         $this->assertSame(PaymentMethod::EWallet, $this->order->refresh()->payment_method);
         $this->assertSame('tok-1', $this->order->snap_token);

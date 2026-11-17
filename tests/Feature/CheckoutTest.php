@@ -43,12 +43,14 @@ class CheckoutTest extends TestCase
         $this->assertSame(300000, $order->total);
 
         $this->post(route('checkout.details.store', $order), $this->detailsPayload(2))->assertRedirect(route('checkout.payment', $order));
-        $this->post(route('checkout.payment.store', $order), ['payment_method' => 'qris'])->assertRedirect(route('orders.show', $order));
+        $this->post(route('checkout.payment.store', $order), ['payment_method' => 'qris'])->assertRedirect(route('checkout.pay', $order));
         $this->assertSame('snap-token-123', $order->refresh()->snap_token);
         $this->assertSame(\App\Enums\PaymentMethod::Qris, $order->payment_method);
 
-        $this->get(route('orders.show', $order))
+        $this->get(route('checkout.pay', $order))
             ->assertOk()
+            ->assertSee('Bayar Sekarang')
+            ->assertSee('QRIS')
             ->assertSee('snap-token-123')
             ->assertSee('SB-Mid-client-abc')
             ->assertSee('app.sandbox.midtrans.com/snap/snap.js');

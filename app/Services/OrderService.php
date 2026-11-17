@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\TicketType;
 use App\Models\User;
 use App\Payments\PaymentGateway;
+use App\Payments\PaymentGatewayException;
 use App\Payments\PaymentUpdate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -183,5 +184,27 @@ class OrderService
             ->log('Refund pesanan');
 
         return $update->status === OrderStatus::Refunded && $this->applyUpdate($update);
+    }
+
+    /**
+     * Fallback when the webhook cannot reach us (e.g. local dev without a tunnel): ask the gateway, never the browser.
+     * Gateway errors are logged and ignored; the order is left unchanged.
+     */
+    public function syncWithGateway(Order $order): Order
+    {
+        if ($order->status !== OrderStatus::Pending || ! $order->snap_token) {
+            return $order;
+        }
+
+        try {
+            if ($update = $this->gateway->getStatus($order)) {
+                $this->applyUpdate($update);
+                $order->refresh();
+            }
+        } catch (PaymentGatewayException $e) {
+            Log::warning($e->getMessage(), ['order' => $order->code]);
+        }
+
+        return $order;
     }
 }
