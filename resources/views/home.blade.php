@@ -11,6 +11,8 @@
 
     <x-home.best-sellers :events="$bestSellers" />
 
+    <x-home.categories />
+
     {{-- shortcut: plain upcoming list until the "Event Terdekat" section (#76) replaces it --}}
     <x-ui.section-title>Event mendatang</x-ui.section-title>
     @if ($upcoming->isEmpty())
