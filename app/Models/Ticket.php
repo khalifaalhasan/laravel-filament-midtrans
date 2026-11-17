@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -13,6 +14,17 @@ class Ticket extends Model
     protected function casts(): array
     {
         return ['checked_in_at' => 'datetime'];
+    }
+
+    /** Valid only while its order stays paid (a refund voids it). */
+    public function isValid(): bool
+    {
+        return $this->order->status === OrderStatus::Paid;
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'code';
     }
 
     public function order(): BelongsTo

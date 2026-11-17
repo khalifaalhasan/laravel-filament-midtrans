@@ -23,13 +23,13 @@
             <p class="text-sm text-gray-600 mb-4">Tunjukkan QR ini saat check-in. Satu QR untuk satu orang.</p>
             <ul class="grid gap-4 sm:grid-cols-2">
                 @foreach ($order->tickets as $ticket)
-                    <li class="border border-gray-200 rounded-lg p-4 text-center">
-                        <div class="mx-auto w-48" role="img" aria-label="QR tiket {{ $ticket->code }}">{!! $ticket->qrSvg(192) !!}</div>
-                        <p class="mt-2 font-mono text-sm">{{ $ticket->code }}</p>
-                        @if ($ticket->ticketType)
-                            <p class="text-xs font-medium">{{ $ticket->ticketType->name }}</p>
-                        @endif
-                        <p class="text-xs text-gray-600">{{ $ticket->checked_in_at ? 'Sudah check-in '.$ticket->checked_in_at->translatedFormat('d M Y, H:i') : 'Belum check-in' }}</p>
+                    <li>
+                        <a href="{{ route('tickets.show', $ticket) }}" class="block rounded-lg border border-gray-200 p-4 text-center hover:border-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
+                            <div class="mx-auto w-40" role="img" aria-label="QR tiket {{ $ticket->code }}">{!! $ticket->qrSvg(160) !!}</div>
+                            <p class="mt-2 font-mono text-sm">{{ $ticket->code }}</p>
+                            <p class="text-xs font-medium">{{ $ticket->ticketType?->name }} · {{ $ticket->holder_name }}</p>
+                            <p class="text-xs text-gray-600">{{ $ticket->checked_in_at ? 'Sudah check-in' : 'Belum check-in' }} · Lihat e-ticket</p>
+                        </a>
                     </li>
                 @endforeach
             </ul>
