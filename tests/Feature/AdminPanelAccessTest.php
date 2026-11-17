@@ -37,6 +37,7 @@ class AdminPanelAccessTest extends TestCase
         $this->post('/register', [
             'name' => 'New',
             'email' => 'new@example.com',
+            'phone' => '81234567890',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
