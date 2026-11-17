@@ -39,15 +39,24 @@ class CheckoutTest extends TestCase
         ]);
 
         $order = Order::sole();
-        $response->assertRedirect(route('orders.show', $order));
-        $this->assertSame('snap-token-123', $order->snap_token);
+        $response->assertRedirect(route('checkout.details', $order));
         $this->assertSame(300000, $order->total);
+
+        $this->post(route('checkout.details.store', $order), $this->detailsPayload(2))->assertRedirect(route('orders.show', $order));
+        $this->assertSame('snap-token-123', $order->refresh()->snap_token);
 
         $this->get(route('orders.show', $order))
             ->assertOk()
             ->assertSee('snap-token-123')
             ->assertSee('SB-Mid-client-abc')
             ->assertSee('app.sandbox.midtrans.com/snap/snap.js');
+    }
+
+    private function detailsPayload(int $seats): array
+    {
+        $person = ['name' => 'Budi Santoso', 'id_type' => 'ktp', 'id_number' => '3201234567890001', 'email' => 'budi@contoh.com', 'phone' => '081234567890'];
+
+        return ['buyer' => $person, 'attendees' => array_fill(0, $seats, $person + ['gender' => 'L'])];
     }
 
     public function test_guest_must_log_in(): void
@@ -79,11 +88,17 @@ class CheckoutTest extends TestCase
         $this->mock(PaymentGateway::class, fn (MockInterface $m) => $m->shouldReceive('createCharge')->andThrow(new PaymentGatewayException('down')));
 
         $this->actingAs(User::factory()->create())
-            ->post(route('checkout.store', $this->ticket->event), ['quantities' => [$this->ticket->id => 1]])
+            ->post(route('checkout.store', $this->ticket->event), ['quantities' => [$this->ticket->id => 1]]);
+        $order = Order::sole();
+
+        $this->from(route('checkout.details', $order))
+            ->post(route('checkout.details.store', $order), $this->detailsPayload(1))
+            ->assertRedirect(route('checkout.details', $order))
             ->assertSessionHasErrors('payment');
 
-        $this->assertSame(OrderStatus::Cancelled, Order::sole()->status);
-        $this->assertSame(0, $this->ticket->refresh()->sold);
+        // The buyer can retry while the reservation is still running.
+        $this->assertSame(OrderStatus::Pending, $order->refresh()->status);
+        $this->assertSame(1, $this->ticket->refresh()->sold);
     }
 
     public function test_other_user_cannot_view_order(): void

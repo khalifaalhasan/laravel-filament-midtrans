@@ -16,6 +16,9 @@ Route::post('/webhooks/midtrans', MidtransWebhookController::class)->name('webho
 
 Route::middleware('auth')->group(function () {
     Route::post('/events/{event}/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/{order}/detail', [CheckoutController::class, 'details'])->name('checkout.details');
+    Route::post('/checkout/{order}/detail', [CheckoutController::class, 'saveDetails'])->name('checkout.details.store');
+    Route::post('/checkout/{order}/batal', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
     Route::get('/my-tickets', [OrderController::class, 'index'])->name('my-tickets');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
