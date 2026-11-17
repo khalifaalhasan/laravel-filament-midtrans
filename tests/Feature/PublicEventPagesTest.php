@@ -117,4 +117,13 @@ class PublicEventPagesTest extends TestCase
             $response->assertSee($category->getLabel());
         }
     }
+
+    public function test_home_lists_all_regions(): void
+    {
+        $response = $this->get('/')->assertSee('Temukan Event Menarik di Kotamu!');
+
+        foreach (\App\Enums\Region::cases() as $region) {
+            $response->assertSee('Event di '.$region->getLabel());
+        }
+    }
 }
