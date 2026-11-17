@@ -21,6 +21,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout/{order}/pembayaran', [CheckoutController::class, 'payment'])->name('checkout.payment');
     Route::post('/checkout/{order}/pembayaran', [CheckoutController::class, 'savePayment'])->name('checkout.payment.store');
     Route::get('/checkout/{order}/bayar', [CheckoutController::class, 'pay'])->name('checkout.pay');
+    Route::get('/checkout/{order}/berhasil', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::get('/checkout/{order}/status', [CheckoutController::class, 'status'])->name('checkout.status');
     Route::post('/checkout/{order}/batal', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
     Route::get('/my-tickets', [OrderController::class, 'index'])->name('my-tickets');

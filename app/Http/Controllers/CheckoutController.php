@@ -185,8 +185,26 @@ class CheckoutController extends Controller
         return response()->json([
             'status' => $order->status->value,
             'label' => $order->status->label(),
-            'redirect' => $order->status === OrderStatus::Pending ? null : route('orders.show', $order),
+            'redirect' => match ($order->status) {
+                OrderStatus::Pending => null,
+                OrderStatus::Paid => route('checkout.success', $order),
+                default => route('orders.show', $order),
+            },
         ]);
+    }
+
+    /** Shown once the gateway confirmed payment; stays until the buyer moves on (no auto-redirect). */
+    public function success(Request $request, Order $order): View|RedirectResponse
+    {
+        abort_unless($request->user()->is($order->user), 403);
+
+        if ($order->status !== OrderStatus::Paid) {
+            return redirect()->route('orders.show', $order);
+        }
+
+        $order->load('event', 'items.ticketType')->loadCount('tickets');
+
+        return view('checkout.success', compact('order'));
     }
 
     /** "Back" from step 2: give the seats back and return to step 1. */
@@ -203,6 +221,10 @@ class CheckoutController extends Controller
     private function guardPending(Request $request, Order $order, OrderService $orders): ?RedirectResponse
     {
         abort_unless($request->user()->is($order->user), 403);
+
+        if ($order->status === OrderStatus::Paid) {
+            return redirect()->route('checkout.success', $order);
+        }
 
         if ($order->status !== OrderStatus::Pending) {
             return redirect()->route('orders.show', $order);
