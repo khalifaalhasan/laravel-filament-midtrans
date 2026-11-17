@@ -7,7 +7,7 @@ Project ini punya dua sistem:
 | **User** | Pembeli: beranda, jelajah, detail event, login/register, checkout, Tiket Saya | Blade + Tailwind | **Wajib mengikuti referensi di folder ini** |
 | **Internal** | CEO, Operation, PO di `/admin` | Filament | Tema bawaan Filament |
 
-Screenshot referensi diambil dari platform ticketing yang sudah ada. Tiru **layout, spasi, warna, tipografi, dan komponen** semirip mungkin. **Jangan** salin nama brand, logo, nomor/email kontak, atau ilustrasinya: pakai identitas kita sendiri (`APP_NAME`) dan aset buatan sendiri.
+Screenshot referensi diambil dari platform ticketing yang sudah ada. Buat **persis** seperti referensi: layout, spasi, warna, tipografi, komponen, ikon, dan ilustrasi. Yang diganti hanya **nama brand** (dari `APP_NAME`, termasuk wordmark logo) dan teks kontak.
 
 ## Peta halaman
 
@@ -30,11 +30,11 @@ Fondasi (token, komponen, layout): epic #57.
 | `brand-900` | `#152c8c` | Navbar, footer, bar stepper checkout |
 | `brand-700` | `#2641bf` | Panel kiri halaman login |
 | `brand-600` | `#3c5fec` | Tombol utama (Pilih, Beli Sekarang, Lanjutkan, Pesan Sekarang) |
-| `brand-100` | `#d9e0fb` | Badge kategori, pill |
+| `brand-100` | `#d9e0fb` | Latar badge kategori, pill (teksnya `brand-700` agar kontras AA) |
 | `brand-50` | `#f3f8ff` | Latar kartu tiket, kartu form, kartu event |
 | `ink` | `#09101e` | Judul & teks utama |
 | `warning` | `#ffbb00` | Kartu **Batas Waktu Tersisa** |
-| `danger` | merah (perkiraan `#ef4444`) | Badge **Sold Out** |
+| `danger` | `#dc2626` | Badge **Sold Out** (sedikit lebih gelap dari referensi agar kontras AA) |
 
 Tombol nonaktif = `brand-600` dengan opasitas rendah (lihat tombol Lanjutkan di login).
 
@@ -48,7 +48,7 @@ Tombol nonaktif = `brand-600` dengan opasitas rendah (lihat tombol Lanjutkan di 
 ## Aturan
 
 1. Sebelum mengerjakan task UI user, buka screenshot referensi yang ditautkan di issue.
-2. Pakai token Tailwind, bukan hex lepas di view.
+2. Pakai token Tailwind (`tailwind.config.js`), bukan hex lepas di view.
 3. Aksesibilitas tetap wajib: kontras AA, fokus terlihat, ikon selalu punya label teks.
 4. Responsif sampai lebar ponsel (referensi hanya desktop; susun ulang kolom secara wajar).
 5. Data pribadi di screenshot baru harus disensor sebelum di-commit (repo public).
