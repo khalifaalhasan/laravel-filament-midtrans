@@ -16,6 +16,11 @@ Sistem manajemen event multi-event, single vendor, terintegrasi payment gateway.
 - **Payment gateway di balik interface/adapter** (`PaymentGateway`: `createCharge`, `verifyWebhook`, `getStatus`, `refund`) agar bisa ganti provider.
 - Aksi sensitif (refund, ubah harga, ubah role, ubah kredensial gateway) wajib dicatat di audit log.
 
+## Desain
+
+- Dua sistem: **user** (Blade + Tailwind, website ticketing publik) dan **internal** (Filament `/admin`).
+- Setiap pekerjaan UI sistem user **wajib** membuka referensi di [docs/design/](docs/design/README.md) dan menirunya semirip mungkin. Nama brand, logo, dan kontak memakai identitas sendiri (`APP_NAME`), bukan milik referensi.
+
 ## Keamanan
 
 - Kredensial gateway (server key, secret) hanya di environment variable, tidak pernah di-commit atau dikirim ke client.
