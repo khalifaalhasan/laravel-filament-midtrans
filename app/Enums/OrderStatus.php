@@ -10,6 +10,17 @@ enum OrderStatus: string
     case Cancelled = 'cancelled';
     case Refunded = 'refunded';
 
+    public function label(): string
+    {
+        return match ($this) {
+            self::Pending => 'Menunggu pembayaran',
+            self::Paid => 'Lunas',
+            self::Expired => 'Kedaluwarsa',
+            self::Cancelled => 'Dibatalkan',
+            self::Refunded => 'Dikembalikan',
+        };
+    }
+
     /** Statuses whose seats no longer count against the quota. */
     public function releasesQuota(): bool
     {

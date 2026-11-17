@@ -20,6 +20,7 @@
                 <a href="{{ route('events.index') }}" class="font-semibold">{{ config('app.name') }}</a>
                 <div class="flex items-center gap-4 text-sm">
                     @auth
+                        <a href="{{ route('my-tickets') }}" class="text-gray-700 hover:text-gray-900">Tiket Saya</a>
                         <a href="{{ route('dashboard') }}" class="text-gray-700 hover:text-gray-900">{{ auth()->user()->name }}</a>
                     @else
                         <a href="{{ route('login') }}" class="text-gray-700 hover:text-gray-900">Masuk</a>
