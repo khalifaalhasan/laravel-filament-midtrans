@@ -1,18 +1,24 @@
 @props(['title' => null, 'contained' => true])
 {{-- Public (user system) layout: top bar, navbar, footer. Reference: docs/design/reference/01-beranda.png, 03-detail-event.png --}}
 @php
-    // shortcut: pages not built yet link to '#'; point them at real routes as their tasks land (#79 Jelajah, info pages).
+    // shortcut: info pages (Tentang, FAQ, ...) are not built yet and link to '#'.
     $menu = [
         ['label' => 'Beranda', 'href' => route('events.index'), 'active' => request()->routeIs('events.index')],
-        ['label' => 'Jelajah', 'href' => '#', 'active' => false],
+        ['label' => 'Jelajah', 'href' => route('events.explore'), 'active' => request()->routeIs('events.explore')],
         ['label' => 'Tentang', 'href' => '#', 'active' => false],
         ['label' => 'Hubungi Kami', 'href' => '#', 'active' => false],
     ];
     $topLinks = ['Our Journey', 'Biaya', 'Tiket Gelang', 'FAQ'];
     $footerColumns = [
-        'Tentang Kami' => ['Tentang Kami', 'Our Journey', 'Hubungi Kami', 'Biaya'],
-        'Informasi' => ['Syarat & Ketentuan', 'Kebijakan Privasi & Pemrosesan Data', 'FAQ', 'Tiket Gelang', 'Validasi Tiket'],
-        'Kategori Event' => ['Musik', 'Pameran', 'Wahana', 'Olahraga', 'Semua Kategori'],
+        'Tentang Kami' => array_fill_keys(['Tentang Kami', 'Our Journey', 'Hubungi Kami', 'Biaya'], '#'),
+        'Informasi' => array_fill_keys(['Syarat & Ketentuan', 'Kebijakan Privasi & Pemrosesan Data', 'FAQ', 'Tiket Gelang', 'Validasi Tiket'], '#'),
+        'Kategori Event' => [
+            'Musik' => route('events.explore', ['kategori' => 'musik']),
+            'Pameran' => route('events.explore', ['kategori' => 'pameran']),
+            'Wahana' => route('events.explore', ['kategori' => 'wisata']),
+            'Olahraga' => route('events.explore', ['kategori' => 'olahraga']),
+            'Semua Kategori' => route('events.explore'),
+        ],
     ];
     $socials = ['WhatsApp' => 'si-whatsapp', 'Instagram' => 'si-instagram', 'TikTok' => 'si-tiktok', 'X' => 'si-x', 'LinkedIn' => null, 'YouTube' => 'si-youtube', 'Facebook' => 'si-facebook'];
     $user = auth()->user();
@@ -64,7 +70,7 @@
                             <span class="h-3.5 w-3.5 overflow-hidden rounded-full bg-white" aria-hidden="true"><span class="block h-1/2 bg-red-600"></span></span>
                             ID
                         </span>
-                        <a href="#" class="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-800 hover:bg-brand-700 sm:flex focus:outline-none focus-visible:ring-2 focus-visible:ring-white" aria-label="Cari event">
+                        <a href="{{ route('events.explore') }}#cari" class="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-800 hover:bg-brand-700 sm:flex focus:outline-none focus-visible:ring-2 focus-visible:ring-white" aria-label="Cari event">
                             <x-heroicon-m-magnifying-glass class="h-4 w-4" aria-hidden="true" />
                         </a>
 
@@ -124,8 +130,8 @@
                         <div>
                             <h2 class="text-sm font-semibold">{{ $heading }}</h2>
                             <ul class="mt-3 space-y-2 text-sm text-white/90">
-                                @foreach ($links as $link)
-                                    <li><a href="#" class="hover:underline">{{ $link }}</a></li>
+                                @foreach ($links as $link => $href)
+                                    <li><a href="{{ $href }}" class="hover:underline">{{ $link }}</a></li>
                                 @endforeach
                             </ul>
                         </div>

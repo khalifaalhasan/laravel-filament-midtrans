@@ -1,7 +1,6 @@
 {{-- "Kategori Event": icon circles with outlined label pills. Reference: 01-beranda.png --}}
 @php
-    // shortcut: Jelajah (#79) does not exist yet; links become real once the events.explore route is added.
-    $href = fn ($category) => Route::has('events.explore') ? route('events.explore', ['kategori' => $category->value]) : '#';
+    $href = fn ($category) => route('events.explore', ['kategori' => $category->value]);
 @endphp
 <section class="mb-12" aria-labelledby="kategori-title">
     <x-ui.section-title id="kategori-title">Kategori Event</x-ui.section-title>

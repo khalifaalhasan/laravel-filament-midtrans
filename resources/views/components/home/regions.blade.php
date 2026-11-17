@@ -1,7 +1,6 @@
 {{-- "Temukan Event Menarik di Kotamu!": scrollable region cards. Reference: 01-beranda.png --}}
 @php
-    // shortcut: Jelajah (#79) does not exist yet; links become real once the events.explore route is added.
-    $href = fn ($region) => Route::has('events.explore') ? route('events.explore', ['wilayah' => $region->value]) : '#';
+    $href = fn ($region) => route('events.explore', ['wilayah' => $region->value]);
 @endphp
 <section class="mb-4" aria-labelledby="kotamu-title">
     <x-ui.section-title id="kotamu-title">Temukan Event Menarik di Kotamu!</x-ui.section-title>
