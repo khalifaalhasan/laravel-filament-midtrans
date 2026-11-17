@@ -30,6 +30,28 @@ class UserResource extends Resource
         return UsersTable::configure($table);
     }
 
+    /** Role and PO assignment snapshot, compared before/after save for the audit log. */
+    public static function accessSnapshot(User $user): array
+    {
+        return [
+            'roles' => $user->roles()->pluck('name')->sort()->values()->all(),
+            'project_officer_of' => $user->managedEvents()->pluck('name')->sort()->values()->all(),
+        ];
+    }
+
+    public static function logAccessChange(User $user, array $before): void
+    {
+        $after = self::accessSnapshot($user);
+
+        if ($before !== $after) {
+            activity('audit')
+                ->performedOn($user)
+                ->event('access_changed')
+                ->withProperties(['old' => $before, 'new' => $after])
+                ->log('Ubah role / penugasan PO');
+        }
+    }
+
     public static function getRelations(): array
     {
         return [

@@ -127,8 +127,13 @@ class OrderService
      */
     public function refund(Order $order, string $reason): bool
     {
-        // shortcut: refund is not yet in the audit log; add it with activitylog in #29
         $update = $this->gateway->refund($order, $reason);
+
+        activity('audit')
+            ->performedOn($order)
+            ->event('refund')
+            ->withProperties(['reason' => $reason, 'amount' => $order->total, 'gateway_status' => $update->transactionStatus])
+            ->log('Refund pesanan');
 
         return $update->status === OrderStatus::Refunded && $this->applyUpdate($update);
     }
