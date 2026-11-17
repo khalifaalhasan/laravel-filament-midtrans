@@ -20,7 +20,7 @@
         </dl>
 
         @if ($pending && $order->snap_token)
-            <x-primary-button id="pay-button" class="mt-6 w-full justify-center">Bayar sekarang</x-primary-button>
+            <x-ui.button id="pay-button" class="mt-6 w-full">Bayar sekarang</x-ui.button>
             <script>
                 document.getElementById('pay-button').addEventListener('click', function () {
                     // Snap callbacks only refresh the page; the status itself comes from the server.
