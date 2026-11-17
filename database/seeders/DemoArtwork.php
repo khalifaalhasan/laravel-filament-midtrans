@@ -38,6 +38,7 @@ SVG;
     {
         [$from, $to] = self::PALETTES[$seed % count(self::PALETTES)];
         $text = e(Str::upper($title));
+        $fontSize = min($fontSize, (int) ($w * 1.55 / max(1, mb_strlen($title)))); // keep long titles inside the image
         $r1 = (int) ($h * 0.9);
         $r2 = (int) ($h * 0.6);
 
