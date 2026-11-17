@@ -60,7 +60,7 @@ class CheckoutPayTest extends TestCase
 
         $this->actingAs($this->buyer)->getJson(route('checkout.status', $this->order))
             ->assertOk()
-            ->assertJson(['status' => 'paid', 'label' => 'Lunas', 'redirect' => route('orders.show', $this->order)]);
+            ->assertJson(['status' => 'paid', 'label' => 'Lunas', 'redirect' => route('checkout.success', $this->order)]);
 
         $this->assertSame(OrderStatus::Paid, $this->order->refresh()->status);
         $this->assertCount(1, $this->order->tickets);
@@ -81,8 +81,8 @@ class CheckoutPayTest extends TestCase
             $m->shouldNotReceive('createCharge');
         });
 
-        $this->actingAs($this->buyer)->get(route('checkout.pay', $this->order))->assertRedirect(route('orders.show', $this->order));
-        $this->post(route('checkout.payment.store', $this->order), ['payment_method' => 'card'])->assertRedirect(route('orders.show', $this->order));
+        $this->actingAs($this->buyer)->get(route('checkout.pay', $this->order))->assertRedirect(route('checkout.success', $this->order));
+        $this->post(route('checkout.payment.store', $this->order), ['payment_method' => 'card'])->assertRedirect(route('checkout.success', $this->order));
     }
 
     public function test_without_charge_goes_back_to_step_three_and_others_are_forbidden(): void
@@ -102,5 +102,27 @@ class CheckoutPayTest extends TestCase
         $this->actingAs($this->buyer)->get(route('orders.show', $this->order))
             ->assertSee('Lanjutkan pembayaran')
             ->assertSee(route('checkout.pay', $this->order), false);
+    }
+
+    public function test_success_page_stays_with_summary_and_links(): void
+    {
+        $this->gatewayReports(null);
+        app(OrderService::class)->transition($this->order, OrderStatus::Paid, attributes: ['paid_at' => now()]);
+
+        $this->actingAs($this->buyer)->get(route('checkout.success', $this->order))
+            ->assertOk()
+            ->assertSee('Pembayaran Berhasil!')
+            ->assertSee('1 e-ticket')
+            ->assertSee('Rp185.000')
+            ->assertSee(route('orders.show', $this->order), false)
+            ->assertDontSee('http-equiv="refresh"', false);
+    }
+
+    public function test_success_page_only_for_paid_orders_of_the_buyer(): void
+    {
+        $this->gatewayReports(null);
+
+        $this->actingAs($this->buyer)->get(route('checkout.success', $this->order))->assertRedirect(route('orders.show', $this->order));
+        $this->actingAs(User::factory()->create())->get(route('checkout.success', $this->order))->assertForbidden();
     }
 }
