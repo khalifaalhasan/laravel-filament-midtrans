@@ -52,7 +52,7 @@
                                             <option value="{{ $n }}">{{ $n }}</option>
                                         @endforeach
                                     </select>
-                                    <x-primary-button>Beli</x-primary-button>
+                                    <x-ui.button type="submit">Beli</x-ui.button>
                                 </form>
                             @else
                                 <a href="{{ route('login') }}" class="text-sm underline">Masuk untuk membeli</a>

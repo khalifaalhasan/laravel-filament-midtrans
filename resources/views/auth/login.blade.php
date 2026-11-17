@@ -40,7 +40,9 @@
                     <a href="{{ route('login') }}" class="ml-3 shrink-0 font-medium text-brand-700 hover:underline">Ganti</a>
                 </div>
                 <input type="hidden" name="email" value="{{ $email }}">
-                <x-input-error :messages="$errors->get('email')" class="mt-1" />
+                @error('email')
+                    <p class="mt-1 text-xs text-danger">{{ $message }}</p>
+                @enderror
             </div>
             <x-ui.input name="password" type="password" label="Password" required autofocus autocomplete="current-password" placeholder="Password" />
             <div class="flex items-center justify-between text-sm">

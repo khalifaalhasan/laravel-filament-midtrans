@@ -12,10 +12,6 @@ Route::get('/events/{event}', [EventController::class, 'show'])->name('events.sh
 
 Route::post('/webhooks/midtrans', MidtransWebhookController::class)->name('webhooks.midtrans');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::middleware('auth')->group(function () {
     Route::post('/events/{event}/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/my-tickets', [OrderController::class, 'index'])->name('my-tickets');
