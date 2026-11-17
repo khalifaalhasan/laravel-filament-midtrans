@@ -118,7 +118,7 @@
                 <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
                         <x-brand.logo class="text-2xl" />
-                        <p class="mt-3 text-sm font-semibold">Your Professional Ticketing Partner</p>
+                        <p class="mt-3 text-sm font-semibold">{{ config('brand.tagline') }}</p>
                     </div>
                     @foreach ($footerColumns as $heading => $links)
                         <div>
