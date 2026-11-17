@@ -54,6 +54,10 @@ Agar Midtrans bisa mengirim webhook ke laptop, buka tunnel (misalnya `cloudflare
 
 Panel admin ada di `/admin`. Akun demo (password semua `password`): `ceo@example.com`, `operation@example.com`, `po@example.com` (PO event Tech Conference), `user@example.com`.
 
+## Demo
+
+Panduan presentasi langkah demi langkah: [docs/demo.md](docs/demo.md).
+
 ## Status
 
-Tahap perencanaan. Stack: **Laravel 13 + Filament + Midtrans Snap (sandbox)**, lihat [docs/tech-options.md](docs/tech-options.md). Backlog ada di GitHub Issues (label `epic` dan `task`).
+MVP selesai untuk demo sandbox. Stack: **Laravel 13 + Filament + Midtrans Snap (sandbox)**, lihat [docs/tech-options.md](docs/tech-options.md). Backlog ada di GitHub Issues (label `epic` dan `task`).
