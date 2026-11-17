@@ -49,6 +49,7 @@ Tombol nonaktif = `brand-600` dengan opasitas rendah (lihat tombol Lanjutkan di 
 
 1. Sebelum mengerjakan task UI user, buka screenshot referensi yang ditautkan di issue.
 2. Pakai token Tailwind (`tailwind.config.js`), bukan hex lepas di view.
-3. Aksesibilitas tetap wajib: kontras AA, fokus terlihat, ikon selalu punya label teks.
-4. Responsif sampai lebar ponsel (referensi hanya desktop; susun ulang kolom secara wajar).
-5. Data pribadi di screenshot baru harus disensor sebelum di-commit (repo public).
+3. Harga di sistem user pakai `rupiah($amount)` → `Rp250.510` (tanpa spasi, seperti referensi). Komponen dasar ada di `resources/views/components/ui/` (`x-ui.button`, `x-ui.input`, `x-ui.select`, `x-ui.badge`, `x-ui.panel`, `x-ui.section-title`, `x-ui.event-card`, `x-ui.qty-stepper`); pakai ulang, jangan salin markup.
+4. Aksesibilitas tetap wajib: kontras AA, fokus terlihat, ikon selalu punya label teks.
+5. Responsif sampai lebar ponsel (referensi hanya desktop; susun ulang kolom secara wajar).
+6. Data pribadi di screenshot baru harus disensor sebelum di-commit (repo public).
