@@ -70,4 +70,14 @@ class PasswordResetTest extends TestCase
             return true;
         });
     }
+
+    public function test_reset_link_status_is_in_indonesian(): void
+    {
+        $user = User::factory()->create();
+
+        $this->post('/forgot-password', ['email' => $user->email])
+            ->assertSessionHas('status', 'Link reset password sudah dikirim ke email Anda.');
+
+        $this->get('/forgot-password')->assertSee('Kirim link reset');
+    }
 }
