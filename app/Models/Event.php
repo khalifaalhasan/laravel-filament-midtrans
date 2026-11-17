@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\EventStatus;
+use App\Enums\OrderStatus;
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -48,6 +49,30 @@ class Event extends Model
     public function ticketTypes(): HasMany
     {
         return $this->hasMany(TicketType::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
+    /** Revenue, valid tickets and check-ins; refunded/unpaid orders do not count. */
+    public function scopeWithSalesTotals(Builder $query): void
+    {
+        $paid = fn (Builder $q) => $q->where('status', OrderStatus::Paid);
+        $paidTicket = fn (Builder $q) => $q->whereHas('order', $paid);
+
+        $query
+            ->withSum(['orders as revenue' => $paid], 'total')
+            ->withCount([
+                'tickets as tickets_sold' => $paidTicket,
+                'tickets as checked_in' => fn (Builder $q) => $paidTicket($q)->whereNotNull('checked_in_at'),
+            ]);
     }
 
     /** Project Officers assigned to this event. */
