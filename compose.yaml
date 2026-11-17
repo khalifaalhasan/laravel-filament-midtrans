@@ -1,0 +1,25 @@
+# MySQL for this app. Same file locally and on the server: copy it next to the project's .env and run
+#   docker compose up -d      (or: podman compose up -d)
+# Values come from .env: DB_DATABASE, DB_USERNAME, DB_PASSWORD, DB_PORT, DB_ROOT_PASSWORD.
+services:
+  mysql:
+    image: docker.io/library/mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-${DB_PASSWORD}}
+    ports:
+      # Loopback only: the database is never reachable from the internet, only by the app on this machine.
+      - "127.0.0.1:${DB_PORT:-3307}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u${DB_USERNAME}", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  mysql-data:
