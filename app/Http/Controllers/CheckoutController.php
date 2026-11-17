@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\EventStatus;
 use App\Enums\IdentityType;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
 use App\Models\Event;
 use App\Models\Order;
 use App\Models\TicketType;
@@ -60,7 +61,7 @@ class CheckoutController extends Controller
         return view('checkout.details', ['order' => $order, 'seats' => $order->seats(), 'user' => $request->user()]);
     }
 
-    public function saveDetails(Request $request, Order $order, OrderService $orders, PaymentGateway $gateway): RedirectResponse
+    public function saveDetails(Request $request, Order $order, OrderService $orders): RedirectResponse
     {
         if ($redirect = $this->guardPending($request, $order, $orders)) {
             return $redirect;
@@ -90,13 +91,45 @@ class CheckoutController extends Controller
             'attendees' => array_map($normalize, array_values($data['attendees'])),
         ]);
 
-        // shortcut: charges right after step 2 until step 3 (#87) lets the buyer pick a payment method.
+        return redirect()->route('checkout.payment', $order);
+    }
+
+    /** Step 3: choose the payment method group. No dedicated reference yet: follows the step 2 panels. */
+    public function payment(Request $request, Order $order, OrderService $orders): View|RedirectResponse
+    {
+        if ($redirect = $this->guardPending($request, $order, $orders)) {
+            return $redirect;
+        }
+
+        if (blank($order->buyer_name)) {
+            return redirect()->route('checkout.details', $order);
+        }
+
+        $order->load('items.ticketType', 'event');
+
+        return view('checkout.payment', ['order' => $order]);
+    }
+
+    public function savePayment(Request $request, Order $order, OrderService $orders, PaymentGateway $gateway): RedirectResponse
+    {
+        if ($redirect = $this->guardPending($request, $order, $orders)) {
+            return $redirect;
+        }
+
+        // The Midtrans transaction is created once; the method is fixed after that (no second charge on refresh or back).
+        if ($order->snap_token) {
+            return redirect()->route('orders.show', $order);
+        }
+
+        $data = $request->validate(['payment_method' => ['required', Rule::enum(PaymentMethod::class)]], [], ['payment_method' => 'metode pembayaran']);
+        $order->update(['payment_method' => $data['payment_method']]);
+
         try {
             $order->update(['snap_token' => $gateway->createCharge($order)]);
         } catch (PaymentGatewayException $e) {
             Log::error($e->getMessage(), ['order' => $order->code]);
 
-            return back()->withInput()->withErrors(['payment' => 'Pembayaran sedang tidak tersedia. Coba lagi sebentar lagi.']);
+            return back()->withErrors(['payment' => 'Pembayaran sedang tidak tersedia. Coba lagi sebentar lagi.']);
         }
 
         return redirect()->route('orders.show', $order);

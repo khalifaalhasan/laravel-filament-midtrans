@@ -11,7 +11,6 @@
     ]));
     $attendees = collect($seats)->keys()->map(fn ($i) => $person(old("attendees.$i", $order->attendees[$i] ?? [])) + ['gender' => old("attendees.$i.gender", $order->attendees[$i]['gender'] ?? '')])
         ->map(fn ($a) => ['phone' => preg_replace('/^\+62/', '', (string) $a['phone'])] + $a)->all();
-    $secondsLeft = max(0, (int) now()->diffInSeconds($order->expires_at, false));
 @endphp
 <x-checkout-layout :step="2" :title="'Detail Pesanan · '.$event->name">
     <form method="POST" action="{{ route('checkout.details.store', $order) }}" id="details-form"
@@ -90,29 +89,7 @@
             @endforeach
         </div>
 
-        <aside class="space-y-4">
-            <div class="lg:sticky lg:top-6 lg:space-y-4">
-                <div x-data="{ left: {{ $secondsLeft }}, get mmss() { return String(Math.floor(this.left / 60)).padStart(2, '0') + ':' + String(this.left % 60).padStart(2, '0') } }"
-                    x-init="const t = setInterval(() => { if (--left <= 0) { clearInterval(t); window.location.reload() } }, 1000)"
-                    class="flex items-center justify-center gap-4 rounded-card bg-warning px-4 py-3 text-ink" role="timer" aria-live="off">
-                    <span class="text-lg font-semibold tabular-nums" x-text="mmss">{{ gmdate('i:s', $secondsLeft) }}</span>
-                    <span class="h-6 w-px bg-ink/40" aria-hidden="true"></span>
-                    <span class="text-sm font-medium">Batas Waktu Tersisa</span>
-                </div>
-
-                <x-ui.panel title="Rincian Pesanan" icon="heroicon-s-shopping-bag" class="mt-4 lg:mt-0">
-                    <div class="space-y-3 text-sm">
-                        @foreach ($order->items as $item)
-                            <div>
-                                <p class="font-medium">{{ $item->ticketType->name }}</p>
-                                <div class="flex justify-between text-gray-600"><span>x{{ $item->quantity }}</span><span class="text-ink">{{ rupiah($item->subtotal) }}</span></div>
-                            </div>
-                        @endforeach
-                        <div class="flex justify-between border-t border-dashed border-gray-200 pt-3 text-gray-600"><span>Subtotal</span><span class="text-ink">{{ rupiah($order->total) }}</span></div>
-                        <div class="flex justify-between border-t border-dashed border-gray-200 pt-3"><span class="font-medium">Total Bayar</span><span class="text-base font-semibold">{{ rupiah($order->total) }}</span></div>
-                    </div>
-                </x-ui.panel>
-
+        <x-checkout.summary :order="$order">
                 <div class="mt-4 flex gap-2 lg:mt-0">
                     <button type="submit" form="cancel-form" aria-label="Kembali ke pilih kategori (reservasi dibatalkan)"
                         class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-brand-600 text-brand-700 hover:bg-brand-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600">
@@ -120,8 +97,7 @@
                     </button>
                     <x-ui.button type="submit" class="w-full">Lanjutkan</x-ui.button>
                 </div>
-            </div>
-        </aside>
+        </x-checkout.summary>
     </form>
 
     <form method="POST" action="{{ route('checkout.cancel', $order) }}" id="cancel-form" class="hidden">@csrf</form>
