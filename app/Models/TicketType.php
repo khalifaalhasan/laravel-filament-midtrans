@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
-#[Fillable(['name', 'price', 'quota', 'sale_starts_at', 'sale_ends_at'])]
+#[Fillable(['name', 'price', 'quota', 'sale_starts_at', 'sale_ends_at', 'bundle_size', 'description'])]
 class TicketType extends Model
 {
     /** @use HasFactory<TicketTypeFactory> */
@@ -20,6 +20,7 @@ class TicketType extends Model
 
     protected $attributes = [
         'sold' => 0,
+        'bundle_size' => 1,
     ];
 
     protected function casts(): array
@@ -28,6 +29,7 @@ class TicketType extends Model
             'price' => 'integer',
             'quota' => 'integer',
             'sold' => 'integer',
+            'bundle_size' => 'integer',
             'sale_starts_at' => 'datetime',
             'sale_ends_at' => 'datetime',
         ];
@@ -52,6 +54,18 @@ class TicketType extends Model
         return $this->hasMany(Order::class);
     }
 
+    public function isBundle(): bool
+    {
+        return $this->bundle_size > 1;
+    }
+
+    /** Purchasable units left: a bundle unit needs bundle_size seats. */
+    public function availableUnits(): int
+    {
+        return intdiv($this->remaining(), max(1, $this->bundle_size));
+    }
+
+    /** Seats (e-tickets) left. */
     public function remaining(): int
     {
         return max(0, $this->quota - $this->sold);

@@ -51,8 +51,9 @@ class OrderService
 
         return DB::transaction(function () use ($user, $quantities, $types) {
             foreach ($quantities as $typeId => $quantity) {
+                $seats = $quantity * $types[$typeId]->bundle_size;
                 // Atomic check-and-increment: works without row locks (SQLite) and cannot oversell under concurrency.
-                $reserved = TicketType::whereKey($typeId)->whereRaw('sold + ? <= quota', [$quantity])->increment('sold', $quantity);
+                $reserved = TicketType::whereKey($typeId)->whereRaw('sold + ? <= quota', [$seats])->increment('sold', $seats);
 
                 if ($reserved === 0) {
                     // Throwing rolls back the increments of earlier lines too.
@@ -63,6 +64,7 @@ class OrderService
             $lines = collect($quantities)->map(fn (int $quantity, int $typeId) => [
                 'ticket_type_id' => $typeId,
                 'quantity' => $quantity,
+                'bundle_size' => $types[$typeId]->bundle_size,
                 'unit_price' => $types[$typeId]->price,
                 'subtotal' => $types[$typeId]->price * $quantity,
             ])->values();
@@ -97,7 +99,7 @@ class OrderService
 
             if ($to->releasesQuota()) {
                 foreach ($order->items as $item) {
-                    TicketType::whereKey($item->ticket_type_id)->decrement('sold', $item->quantity);
+                    TicketType::whereKey($item->ticket_type_id)->decrement('sold', $item->seats());
                 }
             }
 
@@ -108,7 +110,7 @@ class OrderService
                         'event_id' => $order->event_id,
                         'ticket_type_id' => $item->ticket_type_id,
                         'code' => 'TKT-'.Str::upper(Str::random(10)),
-                    ], range(1, $item->quantity)));
+                    ], range(1, $item->seats())));
                 }
             }
 

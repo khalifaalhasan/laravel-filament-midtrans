@@ -22,11 +22,11 @@ use Illuminate\Support\Str;
  */
 class HomeCatalogueSeeder extends Seeder
 {
-    // [name, category, region, organizer, days from now, duration days, featured, tickets [name => [price, quota]]]
+    // [name, category, region, organizer, days from now, duration days, featured, tickets [name => [price, quota, bundle_size?]]]
     public const CATALOGUE = [
         ['Tech Conference', EventCategory::Talkshow, Region::Jabodetabek, 'Inovasi Nusantara', 20, 1, true, ['Regular' => [150_000, 100], 'VIP' => [500_000, 20]]],
-        ['Music Festival', EventCategory::Musik, Region::DiyJateng, 'Nara Kreatif', 35, 2, true, ['Festival Pass' => [250_000, 500]]],
-        ['Senandung Senja Fest', EventCategory::Musik, Region::JawaBarat, 'Senja Production', 12, 1, true, ['Reguler' => [75_000, 200], 'VIP' => [150_000, 200]]],
+        ['Music Festival', EventCategory::Musik, Region::DiyJateng, 'Nara Kreatif', 35, 2, true, ['Festival Pass' => [250_000, 500], 'Bundling 4 Festival Pass (Bundle 4 Tiket)' => [900_000, 200, 4], 'Bundling 10 Festival Pass (Bundle 10 Tiket)' => [2_000_000, 200, 10]]],
+        ['Senandung Senja Fest', EventCategory::Musik, Region::JawaBarat, 'Senja Production', 12, 1, true, ['Reguler' => [75_000, 200], 'VIP' => [150_000, 200], 'Bundling 2 Reguler (Bundle 2 Tiket)' => [140_000, 100, 2]]],
         ['Pameran Seni Rupa Nusantara', EventCategory::Pameran, Region::Jabodetabek, 'Galeri Kita', 5, 14, false, ['Reguler' => [40_000, 200]]],
         ['Teater Bayang Kota', EventCategory::Teater, Region::DiyJateng, 'Sanggar Bayang', 18, 1, false, ['Reguler' => [55_000, 200], 'VIP' => [90_000, 200]]],
         ['Lari Pagi 10K Surabaya', EventCategory::Olahraga, Region::JawaTimur, 'Komunitas Lari Timur', 26, 1, true, ['Reguler' => [150_000, 200]]],
@@ -71,8 +71,14 @@ class HomeCatalogueSeeder extends Seeder
                 'ends_at' => $startsAt->copy()->addDays($days - 1)->setTime(23, 0),
             ]);
 
-            foreach ($tickets as $ticketName => [$price, $quota]) {
-                $event->ticketTypes()->firstOrCreate(['name' => $ticketName], ['price' => $price, 'quota' => $quota]);
+            foreach ($tickets as $ticketName => $spec) {
+                [$price, $quota, $bundle] = $spec + [2 => 1];
+                $event->ticketTypes()->firstOrCreate(['name' => $ticketName], [
+                    'price' => $price,
+                    'quota' => $quota,
+                    'bundle_size' => $bundle,
+                    'description' => $bundle > 1 ? "Paket {$bundle} tiket sekaligus." : null,
+                ]);
             }
         }
 

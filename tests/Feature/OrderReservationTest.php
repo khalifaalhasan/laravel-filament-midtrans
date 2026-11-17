@@ -144,4 +144,42 @@ class OrderReservationTest extends TestCase
         $service->transition($paid, OrderStatus::Paid);
         $this->assertSame([2, 1], [$paid->tickets()->where('ticket_type_id', $regular->id)->count(), $paid->tickets()->where('ticket_type_id', $vip->id)->count()]);
     }
+
+    public function test_bundle_uses_seats_and_issues_one_ticket_per_seat(): void
+    {
+        $event = Event::factory()->published()->create();
+        $bundle = TicketType::factory()->for($event)->create(['price' => 600000, 'quota' => 10, 'bundle_size' => 4]);
+        $service = app(OrderService::class);
+
+        $order = $service->reserve(User::factory()->create(), [$bundle->id => 2]);
+
+        $this->assertSame(1200000, $order->total);
+        $this->assertSame(8, $bundle->refresh()->sold);
+        $this->assertSame(0, $bundle->availableUnits()); // 2 seats left < 4
+
+        // A later edit to the type must not change what this order releases or issues.
+        $bundle->update(['bundle_size' => 2]);
+        $service->transition($order, OrderStatus::Paid);
+        $this->assertCount(8, $order->tickets);
+    }
+
+    public function test_bundle_that_does_not_fit_is_rejected(): void
+    {
+        $bundle = TicketType::factory()->for(Event::factory()->published())->create(['quota' => 10, 'bundle_size' => 6]);
+        $service = app(OrderService::class);
+        $service->reserve(User::factory()->create(), [$bundle->id => 1]);
+
+        $this->expectException(ValidationException::class);
+        $service->reserve(User::factory()->create(), [$bundle->id => 1]);
+    }
+
+    public function test_expiring_bundle_releases_all_seats(): void
+    {
+        $bundle = TicketType::factory()->for(Event::factory()->published())->create(['quota' => 10, 'bundle_size' => 3]);
+        $service = app(OrderService::class);
+
+        $service->transition($service->reserve(User::factory()->create(), [$bundle->id => 3]), OrderStatus::Expired);
+
+        $this->assertSame(0, $bundle->refresh()->sold);
+    }
 }
