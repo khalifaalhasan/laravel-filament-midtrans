@@ -2,7 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Enums\EventCategory;
 use App\Enums\EventStatus;
+use App\Enums\Region;
 use App\Models\Event;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -25,6 +27,9 @@ class EventFactory extends Factory
             'starts_at' => $startsAt,
             'ends_at' => (clone $startsAt)->modify('+4 hours'),
             'status' => EventStatus::Draft,
+            'category' => fake()->randomElement(EventCategory::cases()),
+            'region' => fake()->randomElement(Region::cases()),
+            'organizer_name' => fake()->company(),
         ];
     }
 

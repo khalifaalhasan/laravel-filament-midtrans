@@ -2,12 +2,15 @@
 
 namespace App\Filament\Resources\Events\Schemas;
 
+use App\Enums\EventCategory;
 use App\Enums\EventStatus;
+use App\Enums\Region;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
@@ -39,12 +42,35 @@ class EventForm
                 DateTimePicker::make('ends_at')
                     ->required()
                     ->after('starts_at'),
+                Select::make('category')
+                    ->label('Kategori')
+                    ->options(EventCategory::class)
+                    ->required(),
+                Select::make('region')
+                    ->label('Wilayah')
+                    ->options(Region::class)
+                    ->required(),
+                TextInput::make('organizer_name')
+                    ->label('Penyelenggara'),
+                FileUpload::make('organizer_logo_path')
+                    ->label('Logo penyelenggara')
+                    ->image()
+                    ->avatar()
+                    ->disk('public')
+                    ->directory('organizers'),
                 FileUpload::make('poster_path')
-                    ->label('Poster')
+                    ->label('Poster (kartu event, rasio 5:2)')
                     ->image()
                     ->disk('public')
-                    ->directory('posters')
-                    ->columnSpanFull(),
+                    ->directory('posters'),
+                FileUpload::make('banner_path')
+                    ->label('Banner (carousel beranda, rasio 10:3)')
+                    ->image()
+                    ->disk('public')
+                    ->directory('banners'),
+                Toggle::make('is_featured')
+                    ->label('Tampilkan di banner beranda')
+                    ->helperText('Event featured dengan banner muncul di carousel paling atas beranda.'),
             ]);
     }
 }
