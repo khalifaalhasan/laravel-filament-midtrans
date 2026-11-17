@@ -77,12 +77,18 @@ class MidtransGatewayTest extends TestCase
 
     public function test_snap_params_use_integer_amounts_and_matching_expiry(): void
     {
-        $order = Order::factory()->create(['quantity' => 2]);
+        $event = \App\Models\Event::factory()->create();
+        $order = Order::factory()
+            ->withItem(\App\Models\TicketType::factory()->for($event)->create(['price' => 100000]), 2)
+            ->withItem(\App\Models\TicketType::factory()->for($event)->create(['price' => 250000]), 1)
+            ->create();
         $params = $this->gateway->snapParams($order);
 
         $this->assertSame($order->code, $params['transaction_details']['order_id']);
         $this->assertSame($order->total, $params['transaction_details']['gross_amount']);
-        $this->assertSame($order->total, $params['item_details'][0]['price'] * $params['item_details'][0]['quantity']);
+        $this->assertCount(2, $params['item_details']);
+        $this->assertSame(450000, $order->total);
+        $this->assertSame($order->total, collect($params['item_details'])->sum(fn ($i) => $i['price'] * $i['quantity']));
         $this->assertSame(Order::RESERVATION_MINUTES, $params['expiry']['duration']);
         $this->assertLessThanOrEqual(50, mb_strlen($params['item_details'][0]['name']));
     }

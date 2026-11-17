@@ -17,37 +17,66 @@ class OrderService
 {
     public function __construct(private readonly PaymentGateway $gateway) {}
 
-    /** Hold seats and create a pending order. Throws ValidationException when not buyable or sold out. */
-    public function reserve(User $user, TicketType $ticketType, int $quantity): Order
+    /**
+     * Hold seats for several ticket types of one event and create a pending order.
+     *
+     * @param  array<int, int>  $quantities  ticket_type_id => quantity
+     *
+     * @throws ValidationException when a type is not buyable, the total exceeds the limit, or seats ran out.
+     *                             Nothing stays reserved when any line fails.
+     */
+    public function reserve(User $user, array $quantities): Order
     {
-        if ($quantity < 1) {
-            throw ValidationException::withMessages(['quantity' => 'Jumlah tiket minimal 1.']);
+        $quantities = array_filter(array_map('intval', $quantities), fn (int $qty) => $qty > 0);
+
+        if ($quantities === []) {
+            throw ValidationException::withMessages(['quantities' => 'Pilih minimal 1 tiket.']);
         }
 
-        if (! $ticketType->isOnSale()) {
-            throw ValidationException::withMessages(['ticket_type_id' => 'Tiket ini sedang tidak dijual.']);
+        if (array_sum($quantities) > Order::MAX_TICKETS) {
+            throw ValidationException::withMessages(['quantities' => 'Maksimal '.Order::MAX_TICKETS.' tiket dalam 1 transaksi.']);
         }
 
-        return DB::transaction(function () use ($user, $ticketType, $quantity) {
-            // Atomic check-and-increment: works without row locks (SQLite) and cannot oversell under concurrency.
-            $reserved = TicketType::whereKey($ticketType->getKey())
-                ->whereRaw('sold + ? <= quota', [$quantity])
-                ->increment('sold', $quantity);
+        $types = TicketType::with('event')->findMany(array_keys($quantities))->keyBy('id');
 
-            if ($reserved === 0) {
-                throw ValidationException::withMessages(['quantity' => 'Sisa kuota tidak mencukupi.']);
+        if ($types->count() !== count($quantities) || $types->pluck('event_id')->unique()->count() !== 1) {
+            throw ValidationException::withMessages(['quantities' => 'Jenis tiket tidak valid.']);
+        }
+
+        foreach ($types as $type) {
+            if (! $type->isOnSale()) {
+                throw ValidationException::withMessages(['quantities' => "Tiket {$type->name} sedang tidak dijual."]);
+            }
+        }
+
+        return DB::transaction(function () use ($user, $quantities, $types) {
+            foreach ($quantities as $typeId => $quantity) {
+                // Atomic check-and-increment: works without row locks (SQLite) and cannot oversell under concurrency.
+                $reserved = TicketType::whereKey($typeId)->whereRaw('sold + ? <= quota', [$quantity])->increment('sold', $quantity);
+
+                if ($reserved === 0) {
+                    // Throwing rolls back the increments of earlier lines too.
+                    throw ValidationException::withMessages(['quantities' => "Sisa kuota {$types[$typeId]->name} tidak mencukupi."]);
+                }
             }
 
-            return Order::create([
+            $lines = collect($quantities)->map(fn (int $quantity, int $typeId) => [
+                'ticket_type_id' => $typeId,
+                'quantity' => $quantity,
+                'unit_price' => $types[$typeId]->price,
+                'subtotal' => $types[$typeId]->price * $quantity,
+            ])->values();
+
+            $order = Order::create([
                 'code' => 'ORD-'.Str::upper(Str::ulid()),
                 'user_id' => $user->getKey(),
-                'event_id' => $ticketType->event_id,
-                'ticket_type_id' => $ticketType->getKey(),
-                'quantity' => $quantity,
-                'unit_price' => $ticketType->price,
-                'total' => $ticketType->price * $quantity,
+                'event_id' => $types->first()->event_id,
+                'total' => $lines->sum('subtotal'),
                 'expires_at' => now()->addMinutes(Order::RESERVATION_MINUTES),
             ]);
+            $order->items()->createMany($lines->all());
+
+            return $order;
         });
     }
 
@@ -67,15 +96,20 @@ class OrderService
             }
 
             if ($to->releasesQuota()) {
-                TicketType::whereKey($order->ticket_type_id)->decrement('sold', $order->quantity);
+                foreach ($order->items as $item) {
+                    TicketType::whereKey($item->ticket_type_id)->decrement('sold', $item->quantity);
+                }
             }
 
             // Issued inside the same transaction as the status change, so it happens exactly once.
             if ($to === OrderStatus::Paid) {
-                $order->tickets()->createMany(array_map(fn () => [
-                    'event_id' => $order->event_id,
-                    'code' => 'TKT-'.Str::upper(Str::random(10)),
-                ], range(1, $order->quantity)));
+                foreach ($order->items as $item) {
+                    $order->tickets()->createMany(array_map(fn () => [
+                        'event_id' => $order->event_id,
+                        'ticket_type_id' => $item->ticket_type_id,
+                        'code' => 'TKT-'.Str::upper(Str::random(10)),
+                    ], range(1, $item->quantity)));
+                }
             }
 
             $order->refresh();

@@ -27,7 +27,7 @@ class MyTicketsTest extends TestCase
 
     public function test_paid_order_page_shows_qr_tickets_to_owner_only(): void
     {
-        $order = Order::factory()->create(['quantity' => 2, 'snap_token' => 'tok']);
+        $order = Order::factory()->withItem(\App\Models\TicketType::factory()->create(), 2)->create(['snap_token' => 'tok']);
         app(OrderService::class)->transition($order, OrderStatus::Paid);
         $code = $order->tickets()->first()->code;
 

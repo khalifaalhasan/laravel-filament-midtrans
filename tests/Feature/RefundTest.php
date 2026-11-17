@@ -27,7 +27,7 @@ class RefundTest extends TestCase
         parent::setUp();
         $ticket = TicketType::factory()->create(['quota' => 10]);
         $ticket->forceFill(['sold' => 2])->save();
-        $this->order = Order::factory()->for($ticket)->create(['quantity' => 2, 'status' => OrderStatus::Paid, 'paid_at' => now()]);
+        $this->order = Order::factory()->withItem($ticket, 2)->create(['status' => OrderStatus::Paid, 'paid_at' => now()]);
     }
 
     private function refundAction(): TestAction
@@ -47,7 +47,7 @@ class RefundTest extends TestCase
             ->assertNotified('Refund berhasil');
 
         $this->assertSame(OrderStatus::Refunded, $this->order->refresh()->status);
-        $this->assertSame(0, $this->order->ticketType->refresh()->sold);
+        $this->assertSame(0, $this->order->items->first()->ticketType->refresh()->sold);
     }
 
     public function test_gateway_failure_keeps_order_paid(): void

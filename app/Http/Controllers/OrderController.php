@@ -17,7 +17,7 @@ class OrderController extends Controller
     public function index(Request $request): View
     {
         $orders = $request->user()->orders()
-            ->with('event', 'ticketType')
+            ->with('event', 'items.ticketType')
             ->withCount('tickets')
             ->latest()
             ->paginate(10);
@@ -41,7 +41,7 @@ class OrderController extends Controller
             }
         }
 
-        $order->load('ticketType', 'event', 'tickets');
+        $order->load('items.ticketType', 'event', 'tickets.ticketType');
 
         return view('orders.show', compact('order'));
     }

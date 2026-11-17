@@ -20,6 +20,11 @@ class Ticket extends Model
         return $this->belongsTo(Order::class);
     }
 
+    public function ticketType(): BelongsTo
+    {
+        return $this->belongsTo(TicketType::class);
+    }
+
     public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);

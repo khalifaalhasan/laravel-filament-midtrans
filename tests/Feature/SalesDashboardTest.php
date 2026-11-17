@@ -32,17 +32,17 @@ class SalesDashboardTest extends TestCase
 
         // Event A: 2 paid tickets (1 checked in), 1 refunded order, 1 pending order.
         $a = TicketType::factory()->for($this->eventA)->create(['price' => 100000]);
-        $paid = Order::factory()->for($a)->create(['quantity' => 2]);
+        $paid = Order::factory()->withItem($a, 2)->create();
         $service->transition($paid, OrderStatus::Paid);
         $paid->tickets()->first()->update(['checked_in_at' => now()]);
-        $refunded = Order::factory()->for($a)->create();
+        $refunded = Order::factory()->withItem($a)->create();
         $service->transition($refunded, OrderStatus::Paid);
         $service->transition($refunded, OrderStatus::Refunded, [OrderStatus::Paid]);
-        Order::factory()->for($a)->create();
+        Order::factory()->withItem($a)->create();
 
         // Event B: 1 paid ticket.
         $b = TicketType::factory()->for($this->eventB)->create(['price' => 50000]);
-        $service->transition(Order::factory()->for($b)->create(), OrderStatus::Paid);
+        $service->transition(Order::factory()->withItem($b)->create(), OrderStatus::Paid);
     }
 
     public function test_totals_count_only_paid_orders(): void

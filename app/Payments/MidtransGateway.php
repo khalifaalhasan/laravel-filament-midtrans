@@ -30,19 +30,19 @@ class MidtransGateway implements PaymentGateway
 
     public function snapParams(Order $order): array
     {
-        $order->loadMissing('ticketType.event', 'user');
+        $order->loadMissing('items.ticketType', 'event', 'user');
 
         return [
             'transaction_details' => [
                 'order_id' => $order->code,
                 'gross_amount' => $order->total,
             ],
-            'item_details' => [[
-                'id' => (string) $order->ticket_type_id,
-                'price' => $order->unit_price,
-                'quantity' => $order->quantity,
-                'name' => mb_substr($order->ticketType->event->name.' - '.$order->ticketType->name, 0, 50),
-            ]],
+            'item_details' => $order->items->map(fn ($item) => [
+                'id' => (string) $item->ticket_type_id,
+                'price' => $item->unit_price,
+                'quantity' => $item->quantity,
+                'name' => mb_substr($order->event->name.' - '.$item->ticketType->name, 0, 50),
+            ])->all(),
             'customer_details' => [
                 'first_name' => $order->user->name,
                 'email' => $order->user->email,

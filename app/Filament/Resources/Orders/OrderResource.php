@@ -25,7 +25,7 @@ class OrderResource extends Resource
     {
         return parent::getEloquentQuery()
             ->whereHas('event', fn (Builder $q) => $q->manageableBy(auth()->user()))
-            ->with(['event', 'ticketType', 'user']);
+            ->with(['event', 'items.ticketType', 'user']);
     }
 
     public static function table(Table $table): Table

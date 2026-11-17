@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
 
         // Sample sales so the dashboard, order list, check-in and refund have data before any real Midtrans payment.
         $pay = function (User $buyer, $type, int $qty) use ($orders) {
-            $order = $orders->reserve($buyer, $type, $qty);
+            $order = $orders->reserve($buyer, [$type->id => $qty]);
             $orders->transition($order, OrderStatus::Paid, attributes: ['paid_at' => now(), 'payment_type' => 'qris']);
 
             return $order;
@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
         $checkedIn = $pay(User::factory()->withRole('user')->create(), $festivalPass, 1)->tickets()->first();
         $checkedIn->update(['checked_in_at' => now(), 'checked_in_by' => $accounts['operation']->id]);
 
-        $orders->transition($orders->reserve(User::factory()->withRole('user')->create(), $regular, 1), OrderStatus::Expired);
+        $orders->transition($orders->reserve(User::factory()->withRole('user')->create(), [$regular->id => 1]), OrderStatus::Expired);
 
     }
 }

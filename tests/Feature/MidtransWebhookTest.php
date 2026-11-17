@@ -26,7 +26,7 @@ class MidtransWebhookTest extends TestCase
 
         $ticket = TicketType::factory()->create(['price' => 150000, 'quota' => 10]);
         $ticket->forceFill(['sold' => 2])->save();
-        $this->order = Order::factory()->for($ticket)->create(['quantity' => 2]);
+        $this->order = Order::factory()->withItem($ticket, 2)->create();
     }
 
     private function notify(string $status, array $overrides = [])
@@ -70,7 +70,7 @@ class MidtransWebhookTest extends TestCase
         $this->notify('expire')->assertOk()->assertJson(['message' => 'Duplicate ignored']);
 
         $this->assertSame(OrderStatus::Expired, $this->order->refresh()->status);
-        $this->assertSame(0, $this->order->ticketType->refresh()->sold);
+        $this->assertSame(0, $this->order->items->first()->ticketType->refresh()->sold);
         $this->assertSame(1, PaymentNotification::count());
     }
 
@@ -96,6 +96,6 @@ class MidtransWebhookTest extends TestCase
         $this->notify('settlement')->assertOk();
 
         $this->assertSame(OrderStatus::Expired, $this->order->refresh()->status);
-        $this->assertSame(0, $this->order->ticketType->refresh()->sold);
+        $this->assertSame(0, $this->order->items->first()->ticketType->refresh()->sold);
     }
 }

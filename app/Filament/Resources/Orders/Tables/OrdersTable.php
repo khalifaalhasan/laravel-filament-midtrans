@@ -23,8 +23,8 @@ class OrdersTable
                 TextColumn::make('code')->label('Kode')->searchable()->copyable(),
                 TextColumn::make('event.name')->label('Event')->searchable(),
                 TextColumn::make('user.email')->label('Pembeli')->searchable(),
-                TextColumn::make('ticketType.name')->label('Tiket'),
-                TextColumn::make('quantity')->label('Qty'),
+                TextColumn::make('items')->label('Tiket')
+                    ->state(fn (Order $record) => $record->itemsSummary()),
                 TextColumn::make('total')->formatStateUsing(fn (int $state) => Number::currency($state, 'IDR', 'id', 0)),
                 TextColumn::make('status')->badge(),
                 TextColumn::make('payment_type')->label('Metode')->toggleable(),
