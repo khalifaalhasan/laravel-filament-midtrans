@@ -48,6 +48,11 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
+        // Orders are financial records and keep a foreign key to the buyer.
+        if ($user->orders()->exists()) {
+            return back()->withErrors(['password' => 'Akun yang sudah memiliki pesanan tidak bisa dihapus. Hubungi CS.'], 'userDeletion');
+        }
+
         Auth::logout();
 
         $user->delete();
