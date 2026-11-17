@@ -9,12 +9,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 #[Fillable(['name', 'price', 'quota', 'sale_starts_at', 'sale_ends_at'])]
 class TicketType extends Model
 {
     /** @use HasFactory<TicketTypeFactory> */
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     protected $attributes = [
         'sold' => 0,
@@ -29,6 +31,15 @@ class TicketType extends Model
             'sale_starts_at' => 'datetime',
             'sale_ends_at' => 'datetime',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('audit')
+            ->logOnly(['price'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
     }
 
     public function event(): BelongsTo
