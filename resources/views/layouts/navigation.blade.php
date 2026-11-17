@@ -15,6 +15,8 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('events.index')">Event</x-nav-link>
+                    <x-nav-link :href="route('my-tickets')" :active="request()->routeIs('my-tickets')">Tiket Saya</x-nav-link>
                 </div>
             </div>
 
@@ -70,6 +72,8 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('events.index')">Event</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('my-tickets')" :active="request()->routeIs('my-tickets')">Tiket Saya</x-responsive-nav-link>
         </div>
 
         <!-- Responsive Settings Options -->

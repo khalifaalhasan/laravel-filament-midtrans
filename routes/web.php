@@ -18,6 +18,7 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/events/{event}/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/my-tickets', [OrderController::class, 'index'])->name('my-tickets');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
