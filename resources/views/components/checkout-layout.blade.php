@@ -26,10 +26,20 @@
                 <a href="{{ route('events.index') }}" class="text-xl" aria-label="{{ config('app.name') }} - Beranda">
                     <x-brand.logo variant="blue" />
                 </a>
+                <div class="flex items-center gap-2">
+                @auth
+                    <a href="{{ route('my-tickets') }}" class="hidden items-center gap-2 rounded-full bg-gray-100 py-1 pl-1 pr-3 text-sm font-medium hover:bg-gray-200 sm:inline-flex" title="Masuk sebagai {{ auth()->user()->email }}">
+                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-brand-900 text-xs font-semibold text-white" aria-hidden="true">{{ Str::upper(Str::substr(auth()->user()->name, 0, 1)) }}</span>
+                        <span class="max-w-[10rem] truncate">{{ auth()->user()->name }}</span>
+                    </a>
+                @else
+                    <a href="{{ route('login') }}" class="rounded-full bg-gray-100 px-3 py-1.5 text-sm font-medium hover:bg-gray-200">Masuk</a>
+                @endauth
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-sm font-medium" title="Bahasa Indonesia">
                     <span class="h-3.5 w-3.5 overflow-hidden rounded-full bg-white ring-1 ring-gray-200" aria-hidden="true"><span class="block h-1/2 bg-red-600"></span></span>
                     ID
                 </span>
+                </div>
             </div>
 
             <nav aria-label="Langkah checkout" class="bg-brand-900 text-white">
