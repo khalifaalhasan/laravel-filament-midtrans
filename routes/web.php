@@ -24,6 +24,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout/{order}/status', [CheckoutController::class, 'status'])->name('checkout.status');
     Route::post('/checkout/{order}/batal', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
     Route::get('/my-tickets', [OrderController::class, 'index'])->name('my-tickets');
+    Route::get('/e-ticket/{ticket}', [OrderController::class, 'ticket'])->name('tickets.show');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

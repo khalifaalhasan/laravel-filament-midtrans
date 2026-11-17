@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Models\Ticket;
 use App\Services\OrderService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -30,6 +31,16 @@ class OrderController extends Controller
             ->withQueryString();
 
         return view('orders.index', compact('orders', 'tab'));
+    }
+
+    /** Single e-ticket, print-ready. Same access as the order it belongs to. */
+    public function ticket(Ticket $ticket): View
+    {
+        Gate::authorize('view', $ticket->order);
+
+        $ticket->load('order', 'event', 'ticketType');
+
+        return view('orders.ticket', compact('ticket'));
     }
 
     public function show(Order $order, OrderService $orders): View

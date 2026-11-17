@@ -42,7 +42,7 @@
     <body class="flex min-h-screen flex-col bg-white font-sans text-ink antialiased">
         <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-3 focus:py-2 focus:text-sm">Lewati ke konten</a>
 
-        <header x-data="{ open: false }" class="text-white">
+        <header x-data="{ open: false }" class="text-white print:hidden">
             <div class="bg-brand-950">
                 <nav aria-label="Tautan informasi" class="mx-auto flex max-w-6xl justify-center gap-6 overflow-x-auto px-4 py-2 text-xs font-medium">
                     @foreach ($topLinks as $link)
@@ -119,7 +119,7 @@
             {{ $slot }}
         </main>
 
-        <footer class="bg-brand-900 text-white">
+        <footer class="bg-brand-900 text-white print:hidden">
             <div class="mx-auto max-w-6xl px-4 pt-12">
                 <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
