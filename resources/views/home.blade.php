@@ -13,15 +13,20 @@
 
     <x-home.categories />
 
-    {{-- shortcut: plain upcoming list until the "Event Terdekat" section (#76) replaces it --}}
-    <x-ui.section-title>Event mendatang</x-ui.section-title>
-    @if ($upcoming->isEmpty())
-        <p class="text-gray-600">Belum ada event yang dibuka.</p>
-    @else
-        <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            @foreach ($upcoming as $event)
-                <li><x-event-card :event="$event" /></li>
-            @endforeach
-        </ul>
-    @endif
+    <section class="mb-12" aria-labelledby="terdekat-title">
+        <x-ui.section-title id="terdekat-title">Event Terdekat</x-ui.section-title>
+        @if ($upcoming->isEmpty())
+            <p class="text-gray-600">Belum ada event yang dibuka.</p>
+        @else
+            <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($upcoming as $event)
+                    <li><x-event-card :event="$event" class="h-full" /></li>
+                @endforeach
+            </ul>
+            <div class="mt-6 text-center">
+                {{-- shortcut: points at Jelajah once #79 adds the events.explore route --}}
+                <x-ui.button variant="soft" :href="Route::has('events.explore') ? route('events.explore') : '#'">Lihat Lainnya</x-ui.button>
+            </div>
+        @endif
+    </section>
 </x-public-layout>
