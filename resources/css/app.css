@@ -3,3 +3,15 @@
 @tailwind utilities;
 
 [x-cloak] { display: none !important; }
+
+/* Rendered rich text (event description, terms). Sanitized server-side. */
+@layer components {
+    .rich-text { @apply text-sm leading-relaxed text-ink; }
+    .rich-text p { @apply mb-2; }
+    .rich-text h2 { @apply mb-2 mt-4 text-base font-semibold; }
+    .rich-text h3 { @apply mb-2 mt-3 text-sm font-semibold; }
+    .rich-text ol { @apply mb-3 list-decimal space-y-1 pl-5; }
+    .rich-text ul { @apply mb-3 list-disc space-y-1 pl-5; }
+    .rich-text a { @apply text-brand-700 underline; }
+    .rich-text strong { @apply font-semibold; }
+}

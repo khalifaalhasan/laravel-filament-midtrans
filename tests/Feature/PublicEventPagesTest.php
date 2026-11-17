@@ -38,7 +38,7 @@ class PublicEventPagesTest extends TestCase
         $this->get(route('events.show', $event))
             ->assertOk()
             ->assertSee('VIP')
-            ->assertSee("Rp\u{a0}500.000")
+            ->assertSee("Rp500.000")
             ->assertSee('Sisa 15 tiket');
     }
 
@@ -125,5 +125,43 @@ class PublicEventPagesTest extends TestCase
         foreach (\App\Enums\Region::cases() as $region) {
             $response->assertSee('Event di '.$region->getLabel());
         }
+    }
+
+    public function test_detail_page_matches_reference_sections(): void
+    {
+        $event = Event::factory()->published()->create([
+            'category' => \App\Enums\EventCategory::Musik,
+            'organizer_name' => 'Fafest Org',
+            'instagram_url' => 'https://instagram.com/fafest',
+            'description' => '<p><strong>Seru</strong></p><script>alert(1)</script>',
+            'terms' => '<ol><li>Satu tiket satu orang</li></ol>',
+            'facilities' => [\App\Enums\Facility::Toilet, \App\Enums\Facility::Medis],
+        ]);
+        TicketType::factory()->for($event)->create(['price' => 90000]);
+        TicketType::factory()->for($event)->create(['price' => 185000]);
+
+        $this->get(route('events.show', $event))
+            ->assertOk()
+            ->assertSee('Musik')
+            ->assertSee('Fafest Org')
+            ->assertSee('https://instagram.com/fafest', false)
+            ->assertSeeInOrder(['Deskripsi', 'Syarat &amp; Ketentuan', 'Fasilitas'], false)
+            ->assertSee('<strong>Seru</strong>', false)
+            ->assertDontSee('<script>alert(1)', false)
+            ->assertSee('Satu tiket satu orang')
+            ->assertSee('Toilet')
+            ->assertSee('Harga mulai dari')
+            ->assertSee('Rp90.000')
+            ->assertSee('Detail Acara');
+    }
+
+    public function test_order_button_disabled_when_nothing_buyable(): void
+    {
+        $event = Event::factory()->published()->create();
+        TicketType::factory()->for($event)->create(['quota' => 1])->forceFill(['sold' => 1])->save();
+
+        $this->get(route('events.show', $event))
+            ->assertSee('Tiket habis')
+            ->assertSee('aria-disabled="true"', false);
     }
 }
