@@ -4,9 +4,12 @@ namespace App\Models;
 
 use App\Enums\EventCategory;
 use App\Enums\EventStatus;
+use App\Enums\Facility;
 use App\Enums\OrderStatus;
 use App\Enums\Region;
 use Database\Factories\EventFactory;
+use Filament\Forms\Components\RichEditor\RichContentRenderer;
+use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'slug', 'description', 'location', 'starts_at', 'ends_at', 'poster_path', 'status', 'category', 'region', 'organizer_name', 'organizer_logo_path', 'banner_path', 'is_featured'])]
+#[Fillable(['name', 'slug', 'description', 'location', 'starts_at', 'ends_at', 'poster_path', 'status', 'category', 'region', 'organizer_name', 'organizer_logo_path', 'banner_path', 'is_featured', 'terms', 'facilities', 'instagram_url', 'tiktok_url'])]
 class Event extends Model
 {
     /** @use HasFactory<EventFactory> */
@@ -36,6 +39,7 @@ class Event extends Model
             'category' => EventCategory::class,
             'region' => Region::class,
             'is_featured' => 'boolean',
+            'facilities' => AsEnumCollection::of(Facility::class),
         ];
     }
 
@@ -54,6 +58,20 @@ class Event extends Model
     public function scopeWithStartingPrice(Builder $query): void
     {
         $query->withMin(['ticketTypes as min_price' => fn (Builder $q) => $q->whereColumn('sold', '<', 'quota')], 'price');
+    }
+
+    /** Safe HTML for rich-text fields (description, terms). Legacy plain text keeps its line breaks. */
+    public function richHtml(string $field): ?string
+    {
+        $value = $this->{$field};
+
+        if (blank($value)) {
+            return null;
+        }
+
+        return str_contains($value, '<')
+            ? RichContentRenderer::make($value)->toHtml()
+            : nl2br(e($value));
     }
 
     /** "13 Desember 2026", "04 - 05 Desember 2026" or "28 November - 02 Desember 2026" like the reference cards. */
