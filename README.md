@@ -34,13 +34,13 @@ Sistem manajemen event **multi-event, single vendor**: satu penyelenggara (perus
 
 ## Menjalankan Lokal
 
-Butuh PHP 8.3+, Composer, dan Node 20+. Database default-nya SQLite.
+Butuh PHP 8.3+, Composer, Node 20+, dan Podman (atau Docker) untuk MySQL. Test tetap memakai SQLite in-memory.
 
 ```sh
 composer install
 cp .env.example .env
 php artisan key:generate
-touch database/database.sqlite
+podman compose up -d      # MySQL 8.4 di port 3307 (atau: docker compose up -d)
 php artisan migrate --seed
 php artisan storage:link   # poster event
 npm install && npm run build
@@ -53,6 +53,10 @@ Isi `MIDTRANS_SERVER_KEY` dan `MIDTRANS_CLIENT_KEY` di `.env` dengan key **sandb
 Agar Midtrans bisa mengirim webhook ke laptop, buka tunnel (misalnya `cloudflared tunnel --url http://localhost:8000` atau `ngrok http 8000`), lalu isi **Payment Notification URL** di dashboard sandbox Midtrans (Settings > Payment) dengan `https://<url-tunnel>/webhooks/midtrans`.
 
 Panel admin ada di `/admin`. Akun demo (password semua `password`): `ceo@example.com`, `operation@example.com`, `po@example.com` (PO event Tech Conference), `user@example.com`.
+
+## Deploy
+
+Panduan server ada di [docs/deploy.md](docs/deploy.md). Singkatnya: `cp .env.production.example .env`, isi nilainya, `docker compose up -d`, lalu `scripts/deploy.sh`. Data lokal bisa dibawa ke server lewat `php artisan app:export-snapshot` (snapshot di `database/seeders/snapshot`).
 
 ## Demo
 

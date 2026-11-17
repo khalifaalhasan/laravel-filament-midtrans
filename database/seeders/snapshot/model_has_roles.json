@@ -1,0 +1,112 @@
+[
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 1,
+        "role": "ceo"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 2,
+        "role": "operation"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 3,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 4,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 5,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 6,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 7,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 8,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 9,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 10,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 11,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 12,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 13,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 14,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 15,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 16,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 17,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 18,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 19,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 20,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 21,
+        "role": "user"
+    },
+    {
+        "model_type": "App\\Models\\User",
+        "model_id": 22,
+        "role": "user"
+    }
+]
