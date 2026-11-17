@@ -13,6 +13,8 @@ class EventController extends Controller
         return view('home', [
             'featured' => Event::upcoming()->where('is_featured', true)->whereNotNull('banner_path')->orderBy('starts_at')->limit(7)->get(),
             'recommended' => Event::upcoming()->withStartingPrice()->orderByDesc('is_featured')->orderBy('starts_at')->limit(10)->get(),
+            'bestSellers' => Event::upcoming()->withSalesTotals()->orderByDesc('tickets_sold')->limit(5)->get()
+                ->filter(fn (Event $e) => $e->tickets_sold > 0 && ($e->banner_path || $e->poster_path))->values(),
             'upcoming' => Event::upcoming()->withStartingPrice()->orderBy('starts_at')->limit(8)->get(),
         ]);
     }
