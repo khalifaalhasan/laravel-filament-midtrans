@@ -32,7 +32,7 @@ if grep -q '<' .env; then
 fi
 
 step "Maintenance mode"
-php artisan down --retry=15 2>/dev/null || true
+[ -f vendor/autoload.php ] && php artisan down --retry=15 >/dev/null 2>&1 || true
 trap 'php artisan up >/dev/null 2>&1 || true' EXIT
 
 step "Dependensi PHP (tanpa paket development)"
