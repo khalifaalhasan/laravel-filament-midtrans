@@ -6,6 +6,8 @@ use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\TicketType;
 use App\Models\User;
+use App\Payments\PaymentUpdate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -69,5 +71,42 @@ class OrderService
 
             return true;
         });
+    }
+
+    /** Apply a trusted gateway status (verified webhook or server-side status call). Returns whether the order changed. */
+    public function applyUpdate(PaymentUpdate $update): bool
+    {
+        $order = Order::firstWhere('code', $update->orderCode);
+
+        if ($order === null) {
+            Log::warning('Payment update for unknown order', ['order' => $update->orderCode]);
+
+            return false;
+        }
+
+        if ($update->grossAmount !== $order->total) {
+            Log::error('Payment amount mismatch', ['order' => $order->code, 'expected' => $order->total, 'got' => $update->grossAmount]);
+
+            return false;
+        }
+
+        $gatewayFields = array_filter([
+            'payment_type' => $update->paymentType,
+            'gateway_transaction_id' => $update->transactionId,
+        ]);
+
+        $changed = match ($update->status) {
+            OrderStatus::Paid => $this->transition($order, OrderStatus::Paid, attributes: ['paid_at' => now(), ...$gatewayFields]),
+            OrderStatus::Expired, OrderStatus::Cancelled => $this->transition($order, $update->status, attributes: $gatewayFields),
+            OrderStatus::Refunded => $this->transition($order, OrderStatus::Refunded, [OrderStatus::Paid], $gatewayFields),
+            OrderStatus::Pending => false,
+        };
+
+        if (! $changed && $update->status === OrderStatus::Paid && $order->refresh()->status !== OrderStatus::Paid) {
+            // shortcut: money received for an order whose seats were already released; needs manual refund until auto-handling exists
+            Log::critical('Payment received for non-pending order', ['order' => $order->code, 'status' => $order->status->value]);
+        }
+
+        return $changed;
     }
 }
