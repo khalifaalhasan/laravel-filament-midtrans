@@ -9,12 +9,12 @@
         <title>{{ $title ? $title.' · ' : '' }}{{ config('app.name') }}</title>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=plus-jakarta-sans:400,500,600,700&display=swap" rel="stylesheet" />
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         {{ $head ?? '' }}
     </head>
-    <body class="font-sans antialiased bg-gray-100 text-gray-900">
+    <body class="font-sans antialiased bg-white text-ink">
         <header class="bg-white border-b border-gray-200">
             <nav class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
                 <a href="{{ route('events.index') }}" class="font-semibold">{{ config('app.name') }}</a>

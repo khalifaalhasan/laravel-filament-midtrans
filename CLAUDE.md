@@ -19,7 +19,7 @@ Sistem manajemen event multi-event, single vendor, terintegrasi payment gateway.
 ## Desain
 
 - Dua sistem: **user** (Blade + Tailwind, website ticketing publik) dan **internal** (Filament `/admin`).
-- Setiap pekerjaan UI sistem user **wajib** membuka referensi di [docs/design/](docs/design/README.md) dan menirunya semirip mungkin. Nama brand, logo, dan kontak memakai identitas sendiri (`APP_NAME`), bukan milik referensi.
+- Setiap pekerjaan UI sistem user **wajib** membuka referensi di [docs/design/](docs/design/README.md) dan membuatnya **persis** seperti referensi. Yang diganti hanya nama brand (`APP_NAME`) dan teks kontak.
 
 ## Keamanan
 
