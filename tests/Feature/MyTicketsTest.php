@@ -45,4 +45,30 @@ class MyTicketsTest extends TestCase
     {
         $this->get(route('my-tickets'))->assertRedirect(route('login'));
     }
+
+    public function test_active_and_history_tabs(): void
+    {
+        $user = User::factory()->create();
+        $service = app(\App\Services\OrderService::class);
+        $upcoming = \App\Models\Event::factory()->published()->create(['name' => 'Upcoming Paid Fest']);
+        $past = \App\Models\Event::factory()->published()->create(['name' => 'Past Paid Fest', 'starts_at' => now()->subWeek(), 'ends_at' => now()->subWeek()->addHours(3)]);
+
+        $service->transition(Order::factory()->for($user)->for($upcoming)->create(), OrderStatus::Paid);
+        $service->transition(Order::factory()->for($user)->for($past)->create(), OrderStatus::Paid);
+        Order::factory()->for($user)->for(\App\Models\Event::factory()->published()->create(['name' => 'Waiting Fest']))->create();
+        Order::factory()->for($user)->for(\App\Models\Event::factory()->published()->create(['name' => 'Expired Fest']))->create(['status' => OrderStatus::Expired]);
+
+        $this->actingAs($user)->get(route('my-tickets'))
+            ->assertSee('Upcoming Paid Fest')->assertSee('Waiting Fest')->assertSee('Menunggu pembayaran')->assertSee('1 e-ticket')
+            ->assertDontSee('Past Paid Fest')->assertDontSee('Expired Fest');
+
+        $this->get(route('my-tickets', ['tab' => 'riwayat']))
+            ->assertSee('Past Paid Fest')->assertSee('Expired Fest')->assertSee('Kedaluwarsa')
+            ->assertDontSee('Upcoming Paid Fest')->assertDontSee('Waiting Fest');
+    }
+
+    public function test_empty_state(): void
+    {
+        $this->actingAs(User::factory()->create())->get(route('my-tickets'))->assertSee('Belum ada tiket aktif')->assertSee('Jelajah event');
+    }
 }
