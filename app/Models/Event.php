@@ -50,6 +50,12 @@ class Event extends Model
         $query->published()->where('ends_at', '>', now());
     }
 
+    /** Adds `min_price`: cheapest ticket that still has seats left (null when sold out or no tickets). */
+    public function scopeWithStartingPrice(Builder $query): void
+    {
+        $query->withMin(['ticketTypes as min_price' => fn (Builder $q) => $q->whereColumn('sold', '<', 'quota')], 'price');
+    }
+
     /** "13 Desember 2026", "04 - 05 Desember 2026" or "28 November - 02 Desember 2026" like the reference cards. */
     public function dateRangeLabel(): string
     {
