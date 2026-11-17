@@ -21,6 +21,8 @@ class PublicEventPagesTest extends TestCase
 
         $this->get('/')
             ->assertOk()
+            ->assertSee('Event Terdekat')
+            ->assertSee('Lihat Lainnya')
             ->assertSee('Visible Event')
             ->assertDontSee('Draft Event')
             ->assertDontSee('Closed Event')
