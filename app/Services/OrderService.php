@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\TicketType;
 use App\Models\User;
+use App\Payments\PaymentGateway;
 use App\Payments\PaymentUpdate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,8 @@ use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
+    public function __construct(private readonly PaymentGateway $gateway) {}
+
     /** Hold seats and create a pending order. Throws ValidationException when not buyable or sold out. */
     public function reserve(User $user, TicketType $ticketType, int $quantity): Order
     {
@@ -108,5 +111,17 @@ class OrderService
         }
 
         return $changed;
+    }
+
+    /**
+     * Refund a paid order through the gateway. Returns true when the gateway already reports it refunded,
+     * false when it is still processing (a later webhook finishes it). Throws PaymentGatewayException on failure.
+     */
+    public function refund(Order $order, string $reason): bool
+    {
+        // shortcut: refund is not yet in the audit log; add it with activitylog in #29
+        $update = $this->gateway->refund($order, $reason);
+
+        return $update->status === OrderStatus::Refunded && $this->applyUpdate($update);
     }
 }
