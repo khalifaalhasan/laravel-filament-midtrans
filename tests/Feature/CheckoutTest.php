@@ -27,7 +27,10 @@ class CheckoutTest extends TestCase
 
     public function test_checkout_reserves_and_shows_snap_payment(): void
     {
-        $this->mock(PaymentGateway::class, fn (MockInterface $m) => $m->shouldReceive('createCharge')->once()->andReturn('snap-token-123'));
+        $this->mock(PaymentGateway::class, function (MockInterface $m) {
+            $m->shouldReceive('createCharge')->once()->andReturn('snap-token-123');
+            $m->shouldReceive('getStatus')->andReturnNull();
+        });
         config(['midtrans.client_key' => 'SB-Mid-client-abc']);
         $user = User::factory()->create();
 
