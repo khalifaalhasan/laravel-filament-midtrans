@@ -33,6 +33,21 @@ class OrderController extends Controller
         return view('orders.index', compact('orders', 'tab'));
     }
 
+    /** Every order of the buyer, newest first, optionally filtered by status. */
+    public function transactions(Request $request): View
+    {
+        $status = OrderStatus::tryFrom((string) $request->query('status'));
+
+        $orders = $request->user()->orders()
+            ->when($status, fn (Builder $q) => $q->where('status', $status))
+            ->with('event', 'items.ticketType')
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('orders.transactions', compact('orders', 'status'));
+    }
+
     /** Single e-ticket, print-ready. Same access as the order it belongs to. */
     public function ticket(Ticket $ticket): View
     {

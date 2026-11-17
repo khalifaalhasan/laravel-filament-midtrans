@@ -65,7 +65,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'), // WIB: times shown to buyers, Midtrans expiry offsets
 
     /*
     |--------------------------------------------------------------------------

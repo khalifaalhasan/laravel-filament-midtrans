@@ -85,6 +85,7 @@
                                     class="absolute right-0 z-40 mt-2 w-52 overflow-hidden rounded-card bg-white py-1 text-sm text-ink shadow-lg ring-1 ring-black/5">
                                     <p class="truncate border-b border-gray-100 px-4 py-2 text-xs text-gray-600">{{ $user->email }}</p>
                                     <a href="{{ route('my-tickets') }}" class="block px-4 py-2 hover:bg-brand-50">Tiket Saya</a>
+                                    <a href="{{ route('transactions') }}" class="block px-4 py-2 hover:bg-brand-50">Riwayat Transaksi</a>
                                     <a href="{{ route('profile.edit') }}" class="block px-4 py-2 hover:bg-brand-50">Akun Saya</a>
                                     @if ($user->canAccessPanel(filament()->getPanel('admin')))
                                         <a href="{{ url('/admin') }}" class="block px-4 py-2 hover:bg-brand-50">Panel Admin</a>
