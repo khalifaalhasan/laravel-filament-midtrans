@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [EventController::class, 'index'])->name('events.index');
 Route::get('/jelajah', [EventController::class, 'explore'])->name('events.explore');
 Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+Route::get('/events/{event}/tiket', [CheckoutController::class, 'tickets'])->name('checkout.tickets');
 
 Route::post('/webhooks/midtrans', MidtransWebhookController::class)->name('webhooks.midtrans');
 

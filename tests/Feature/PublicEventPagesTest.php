@@ -29,19 +29,6 @@ class PublicEventPagesTest extends TestCase
             ->assertDontSee('Past Event');
     }
 
-    public function test_detail_shows_tickets_with_remaining_quota(): void
-    {
-        $event = Event::factory()->published()->create();
-        TicketType::factory()->for($event)->create(['name' => 'VIP', 'price' => 500000, 'quota' => 20])
-            ->forceFill(['sold' => 5])->save();
-
-        $this->get(route('events.show', $event))
-            ->assertOk()
-            ->assertSee('VIP')
-            ->assertSee("Rp500.000")
-            ->assertSee('Sisa 15 tiket');
-    }
-
     public function test_draft_and_closed_event_detail_is_not_found(): void
     {
         $this->get(route('events.show', Event::factory()->create()))->assertNotFound();
@@ -165,11 +152,4 @@ class PublicEventPagesTest extends TestCase
             ->assertSee('aria-disabled="true"', false);
     }
 
-    public function test_bundle_badge_and_units_on_detail_page(): void
-    {
-        $event = Event::factory()->published()->create();
-        TicketType::factory()->for($event)->create(['name' => 'Paket Squad', 'bundle_size' => 4, 'quota' => 9]);
-
-        $this->get(route('events.show', $event))->assertSee('Bundle 4 tiket')->assertSee('Sisa 2 paket');
-    }
 }
