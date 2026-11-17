@@ -10,13 +10,10 @@ class EventController extends Controller
 {
     public function index(): View
     {
-        $events = Event::published()
-            ->where('ends_at', '>', now())
-            ->withMin('ticketTypes as min_price', 'price')
-            ->orderBy('starts_at')
-            ->paginate(12);
-
-        return view('events.index', compact('events'));
+        return view('home', [
+            'featured' => Event::upcoming()->where('is_featured', true)->whereNotNull('banner_path')->orderBy('starts_at')->limit(7)->get(),
+            'upcoming' => Event::upcoming()->withMin('ticketTypes as min_price', 'price')->orderBy('starts_at')->limit(8)->get(),
+        ]);
     }
 
     public function show(Event $event): View

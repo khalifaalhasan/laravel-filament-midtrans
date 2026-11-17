@@ -45,4 +45,28 @@ class PublicEventPagesTest extends TestCase
         $this->get(route('events.show', Event::factory()->create()))->assertNotFound();
         $this->get(route('events.show', Event::factory()->create(['status' => EventStatus::Closed])))->assertNotFound();
     }
+
+    public function test_home_hero_shows_only_featured_events_with_banner(): void
+    {
+        Event::factory()->published()->create(['name' => 'Featured Gala', 'is_featured' => true, 'banner_path' => 'banners/gala.svg']);
+        Event::factory()->published()->create(['name' => 'No Banner Show', 'is_featured' => true]);
+        Event::factory()->create(['name' => 'Draft Featured', 'is_featured' => true, 'banner_path' => 'banners/draft.svg']);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('aria-roledescription="carousel"', false)
+            ->assertSee('gala.svg', false)
+            ->assertDontSee('draft.svg', false);
+    }
+
+    public function test_date_range_label(): void
+    {
+        $oneDay = Event::factory()->make(['starts_at' => '2026-12-13 14:00', 'ends_at' => '2026-12-13 23:00']);
+        $sameMonth = Event::factory()->make(['starts_at' => '2026-12-04 14:00', 'ends_at' => '2026-12-05 23:00']);
+        $crossMonth = Event::factory()->make(['starts_at' => '2026-11-28 14:00', 'ends_at' => '2026-12-02 23:00']);
+
+        $this->assertSame('13 Desember 2026', $oneDay->dateRangeLabel());
+        $this->assertSame('04 - 05 Desember 2026', $sameMonth->dateRangeLabel());
+        $this->assertSame('28 November - 02 Desember 2026', $crossMonth->dateRangeLabel());
+    }
 }

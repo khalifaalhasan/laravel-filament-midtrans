@@ -44,6 +44,27 @@ class Event extends Model
         $query->where('status', EventStatus::Published);
     }
 
+    /** Published and not finished yet: what the public site lists. */
+    public function scopeUpcoming(Builder $query): void
+    {
+        $query->published()->where('ends_at', '>', now());
+    }
+
+    /** "13 Desember 2026", "04 - 05 Desember 2026" or "28 November - 02 Desember 2026" like the reference cards. */
+    public function dateRangeLabel(): string
+    {
+        $start = $this->starts_at;
+        $end = $this->ends_at;
+
+        if ($start->isSameDay($end)) {
+            return $start->translatedFormat('d F Y');
+        }
+
+        return $start->isSameMonth($end)
+            ? $start->format('d').' - '.$end->translatedFormat('d F Y')
+            : $start->translatedFormat('d F').' - '.$end->translatedFormat('d F Y');
+    }
+
     /** Events this user may manage in the admin panel: all for staff, assigned ones for a PO. */
     public function scopeManageableBy(Builder $query, User $user): void
     {
