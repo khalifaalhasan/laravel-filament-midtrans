@@ -8,7 +8,6 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -18,11 +17,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(Request $request): View
     {
-        // Return to the page the user came from (e.g. an event) unless a guarded page already set it.
-        $previous = url()->previous();
-        if (! $request->session()->has('url.intended') && str_starts_with($previous, url('/')) && ! Str::contains($previous, ['/login', '/register', '/password', '/reset-password'])) {
-            $request->session()->put('url.intended', $previous);
-        }
+        $this->rememberPreviousPage($request);
 
         return view('auth.login');
     }
