@@ -3,6 +3,7 @@
 namespace App\Payments;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
 use App\Models\Order;
 use Midtrans\Config;
 use Midtrans\Snap;
@@ -47,6 +48,7 @@ class MidtransGateway implements PaymentGateway
                 'first_name' => $order->user->name,
                 'email' => $order->user->email,
             ],
+            ...($order->payment_method ? ['enabled_payments' => self::enabledPayments($order->payment_method)] : []),
             // Midtrans stops accepting payment when our seat hold ends.
             'expiry' => [
                 'start_time' => $order->created_at->format('Y-m-d H:i:s O'),
@@ -100,6 +102,17 @@ class MidtransGateway implements PaymentGateway
         } catch (Throwable $e) {
             throw new PaymentGatewayException('Refund Midtrans gagal: '.$e->getMessage(), previous: $e);
         }
+    }
+
+    /** Snap payment codes for each checkout method group. */
+    public static function enabledPayments(PaymentMethod $method): array
+    {
+        return match ($method) {
+            PaymentMethod::VirtualAccount => ['bca_va', 'bni_va', 'bri_va', 'echannel', 'permata_va', 'other_va'],
+            PaymentMethod::Qris => ['other_qris'],
+            PaymentMethod::EWallet => ['gopay', 'shopeepay'],
+            PaymentMethod::Card => ['credit_card'],
+        };
     }
 
     public static function mapStatus(string $transactionStatus, ?string $fraudStatus = null): OrderStatus

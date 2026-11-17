@@ -7,10 +7,8 @@ use App\Models\Event;
 use App\Models\Order;
 use App\Models\TicketType;
 use App\Models\User;
-use App\Payments\PaymentGateway;
 use App\Services\OrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Mockery\MockInterface;
 use Tests\TestCase;
 
 class CheckoutDetailsTest extends TestCase
@@ -60,7 +58,6 @@ class CheckoutDetailsTest extends TestCase
 
     public function test_saves_buyer_and_holders_then_copies_holders_to_tickets_when_paid(): void
     {
-        $this->mock(PaymentGateway::class, fn (MockInterface $m) => $m->shouldReceive('createCharge')->andReturn('tok'));
         $order = $this->order();
 
         $this->actingAs($this->buyer)->post(route('checkout.details.store', $order), [
@@ -70,7 +67,7 @@ class CheckoutDetailsTest extends TestCase
                 $this->person(['name' => 'Siti', 'id_type' => 'sim', 'id_number' => '123456789012', 'gender' => 'P']),
                 $this->person(['name' => 'Ani', 'id_type' => 'paspor', 'id_number' => 'C1234567', 'gender' => 'P']),
             ],
-        ])->assertSessionHasNoErrors()->assertRedirect(route('orders.show', $order));
+        ])->assertSessionHasNoErrors()->assertRedirect(route('checkout.payment', $order));
 
         $order->refresh();
         $this->assertSame('Budi Santoso', $order->buyer_name);

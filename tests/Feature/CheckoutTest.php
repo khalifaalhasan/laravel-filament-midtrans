@@ -42,8 +42,10 @@ class CheckoutTest extends TestCase
         $response->assertRedirect(route('checkout.details', $order));
         $this->assertSame(300000, $order->total);
 
-        $this->post(route('checkout.details.store', $order), $this->detailsPayload(2))->assertRedirect(route('orders.show', $order));
+        $this->post(route('checkout.details.store', $order), $this->detailsPayload(2))->assertRedirect(route('checkout.payment', $order));
+        $this->post(route('checkout.payment.store', $order), ['payment_method' => 'qris'])->assertRedirect(route('orders.show', $order));
         $this->assertSame('snap-token-123', $order->refresh()->snap_token);
+        $this->assertSame(\App\Enums\PaymentMethod::Qris, $order->payment_method);
 
         $this->get(route('orders.show', $order))
             ->assertOk()
@@ -91,9 +93,10 @@ class CheckoutTest extends TestCase
             ->post(route('checkout.store', $this->ticket->event), ['quantities' => [$this->ticket->id => 1]]);
         $order = Order::sole();
 
-        $this->from(route('checkout.details', $order))
-            ->post(route('checkout.details.store', $order), $this->detailsPayload(1))
-            ->assertRedirect(route('checkout.details', $order))
+        $this->post(route('checkout.details.store', $order), $this->detailsPayload(1));
+        $this->from(route('checkout.payment', $order))
+            ->post(route('checkout.payment.store', $order), ['payment_method' => 'card'])
+            ->assertRedirect(route('checkout.payment', $order))
             ->assertSessionHasErrors('payment');
 
         // The buyer can retry while the reservation is still running.
