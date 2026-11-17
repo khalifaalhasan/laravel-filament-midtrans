@@ -45,6 +45,7 @@ php artisan migrate --seed
 php artisan storage:link   # poster event
 npm install && npm run build
 composer run dev   # server, queue, dan vite sekaligus
+php artisan schedule:work   # terminal lain: expire order yang tidak dibayar
 ```
 
 Isi `MIDTRANS_SERVER_KEY` dan `MIDTRANS_CLIENT_KEY` di `.env` dengan key **sandbox** dari [dashboard sandbox Midtrans](https://dashboard.sandbox.midtrans.com) (Settings > Access Keys).
