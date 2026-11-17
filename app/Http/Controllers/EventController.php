@@ -55,7 +55,12 @@ class EventController extends Controller
         abort_unless($event->status === EventStatus::Published, 404);
 
         $event->load(['ticketTypes' => fn ($q) => $q->orderBy('price')]);
+        $buyable = $event->ticketTypes->filter(fn ($t) => $t->isOnSale() && $t->remaining() > 0);
 
-        return view('events.show', compact('event'));
+        return view('events.show', [
+            'event' => $event,
+            'canBuy' => $buyable->isNotEmpty(),
+            'startingPrice' => $buyable->min('price'),
+        ]);
     }
 }
