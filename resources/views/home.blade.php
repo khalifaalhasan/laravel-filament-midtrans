@@ -29,4 +29,6 @@
             </div>
         @endif
     </section>
+
+    <x-home.regions />
 </x-public-layout>
