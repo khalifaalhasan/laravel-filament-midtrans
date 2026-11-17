@@ -35,8 +35,7 @@ class CheckoutTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->post(route('checkout.store', $this->ticket->event), [
-            'ticket_type_id' => $this->ticket->id,
-            'quantity' => 2,
+            'quantities' => [$this->ticket->id => 2],
         ]);
 
         $order = Order::sole();
@@ -53,7 +52,7 @@ class CheckoutTest extends TestCase
 
     public function test_guest_must_log_in(): void
     {
-        $this->post(route('checkout.store', $this->ticket->event), ['ticket_type_id' => $this->ticket->id, 'quantity' => 1])
+        $this->post(route('checkout.store', $this->ticket->event), ['quantities' => [$this->ticket->id => 1]])
             ->assertRedirect(route('login'));
     }
 
@@ -62,15 +61,15 @@ class CheckoutTest extends TestCase
         $other = Event::factory()->published()->create();
 
         $this->actingAs(User::factory()->create())
-            ->post(route('checkout.store', $other), ['ticket_type_id' => $this->ticket->id, 'quantity' => 1])
+            ->post(route('checkout.store', $other), ['quantities' => [$this->ticket->id => 1]])
             ->assertNotFound();
     }
 
     public function test_quantity_is_capped(): void
     {
         $this->actingAs(User::factory()->create())
-            ->post(route('checkout.store', $this->ticket->event), ['ticket_type_id' => $this->ticket->id, 'quantity' => 6])
-            ->assertSessionHasErrors('quantity');
+            ->post(route('checkout.store', $this->ticket->event), ['quantities' => [$this->ticket->id => 6]])
+            ->assertSessionHasErrors('quantities.'.$this->ticket->id);
 
         $this->assertSame(0, Order::count());
     }
@@ -80,7 +79,7 @@ class CheckoutTest extends TestCase
         $this->mock(PaymentGateway::class, fn (MockInterface $m) => $m->shouldReceive('createCharge')->andThrow(new PaymentGatewayException('down')));
 
         $this->actingAs(User::factory()->create())
-            ->post(route('checkout.store', $this->ticket->event), ['ticket_type_id' => $this->ticket->id, 'quantity' => 1])
+            ->post(route('checkout.store', $this->ticket->event), ['quantities' => [$this->ticket->id => 1]])
             ->assertSessionHasErrors('payment');
 
         $this->assertSame(OrderStatus::Cancelled, Order::sole()->status);
@@ -100,5 +99,53 @@ class CheckoutTest extends TestCase
         $order = Order::factory()->create(['snap_token' => 'tok']);
 
         $this->actingAs($order->user)->get(route('orders.show', $order))->assertDontSee('SB-Mid-server-SECRET');
+    }
+
+    public function test_several_categories_in_one_order_and_total_limit(): void
+    {
+        $this->mock(PaymentGateway::class, function (MockInterface $m) {
+            $m->shouldReceive('createCharge')->andReturn('tok');
+            $m->shouldReceive('getStatus')->andReturnNull();
+        });
+        $vip = TicketType::factory()->for($this->ticket->event)->create(['price' => 400000, 'quota' => 10]);
+        $this->actingAs(User::factory()->create());
+
+        $this->post(route('checkout.store', $this->ticket->event), ['quantities' => [$this->ticket->id => 3, $vip->id => 3]])
+            ->assertSessionHasErrors('quantities');
+        $this->assertSame(0, Order::count());
+
+        $this->post(route('checkout.store', $this->ticket->event), ['quantities' => [$this->ticket->id => 2, $vip->id => 1]]);
+        $this->assertSame(700000, Order::sole()->total);
+        $this->assertCount(2, Order::sole()->items);
+    }
+
+    public function test_step_one_lists_categories_with_status_and_bundle_badge(): void
+    {
+        $event = Event::factory()->published()->create();
+        TicketType::factory()->for($event)->create(['name' => 'Normal - VIP', 'price' => 250000, 'quota' => 20]);
+        TicketType::factory()->for($event)->create(['name' => 'Bundling 4 Tiket', 'price' => 640000, 'quota' => 20, 'bundle_size' => 4, 'description' => 'Paket hemat']);
+        TicketType::factory()->for($event)->create(['name' => 'Early Bird', 'price' => 90000, 'quota' => 1])->forceFill(['sold' => 1])->save();
+
+        $this->get(route('checkout.tickets', $event))
+            ->assertOk()
+            ->assertSee('Kategori Tiket')
+            ->assertSeeInOrder(['Normal - VIP', 'Bundling 4 Tiket', 'Early Bird'])
+            ->assertSee('Rp250.000')
+            ->assertSee('Bundle')
+            ->assertSee('Paket hemat')
+            ->assertSee('Sold Out')
+            ->assertSee('Rincian Pesanan')
+            ->assertSee('Masuk untuk membeli')
+            ->assertSee('aria-current="step"', false);
+    }
+
+    public function test_step_one_hidden_for_unpublished_event(): void
+    {
+        $this->get(route('checkout.tickets', Event::factory()->create()))->assertNotFound();
+    }
+
+    public function test_detail_page_order_button_goes_to_step_one(): void
+    {
+        $this->get(route('events.show', $this->ticket->event))->assertSee(route('checkout.tickets', $this->ticket->event), false);
     }
 }

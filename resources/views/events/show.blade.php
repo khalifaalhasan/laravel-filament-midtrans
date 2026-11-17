@@ -7,8 +7,7 @@
         'syarat' => $event->terms ? 'Syarat & Ketentuan' : null,
         'fasilitas' => $event->facilities?->isNotEmpty() ? 'Fasilitas' : null,
     ]);
-    // shortcut: "Pesan Sekarang" jumps to the ticket list below until checkout step 1 (#85) exists.
-    $orderHref = '#tiket';
+    $orderHref = route('checkout.tickets', $event);
 @endphp
 <x-public-layout :title="$event->name">
     <div class="grid gap-10 pb-24 lg:grid-cols-[minmax(0,1fr)_360px] lg:pb-0">
@@ -80,54 +79,6 @@
                     </ul>
                 </section>
             @endif
-
-            <section id="tiket" class="scroll-mt-6 pt-10">
-                <h2 class="mb-3 text-lg font-semibold">Tiket</h2>
-                @if ($errors->any())
-                    <div role="alert" class="mb-3 rounded-md bg-red-50 p-3 text-sm text-danger">{{ $errors->first() }}</div>
-                @endif
-                @forelse ($event->ticketTypes as $ticket)
-                    <div class="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-card bg-brand-50 p-4">
-                        <div>
-                            <p class="font-medium">{{ $ticket->name }}</p>
-                            @if ($ticket->isBundle())
-                                <x-ui.badge variant="soft" class="mt-1"><x-heroicon-o-gift class="h-3.5 w-3.5" aria-hidden="true" />Bundle {{ $ticket->bundle_size }} tiket</x-ui.badge>
-                            @endif
-                            <p class="text-sm text-gray-600">
-                                @if ($ticket->availableUnits() === 0)
-                                    <x-ui.badge variant="danger">Sold Out</x-ui.badge>
-                                @elseif (! $ticket->isOnSale())
-                                    {{ $ticket->sale_starts_at?->isFuture() ? 'Dijual mulai '.$ticket->sale_starts_at->translatedFormat('d M Y, H:i') : 'Penjualan ditutup' }}
-                                @else
-                                    Sisa {{ $ticket->availableUnits() }} {{ $ticket->isBundle() ? 'paket' : 'tiket' }}
-                                @endif
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <p class="font-semibold">{{ rupiah($ticket->price) }}</p>
-                            @if ($ticket->isOnSale() && $ticket->availableUnits() > 0)
-                                @auth
-                                    <form method="POST" action="{{ route('checkout.store', $event) }}" class="flex items-center gap-2">
-                                        @csrf
-                                        <input type="hidden" name="ticket_type_id" value="{{ $ticket->id }}">
-                                        <label for="qty-{{ $ticket->id }}" class="sr-only">Jumlah {{ $ticket->name }}</label>
-                                        <select id="qty-{{ $ticket->id }}" name="quantity" class="rounded-md border-gray-200 text-sm">
-                                            @foreach (range(1, min(App\Models\Order::MAX_TICKETS, $ticket->availableUnits())) as $n)
-                                                <option value="{{ $n }}">{{ $n }}</option>
-                                            @endforeach
-                                        </select>
-                                        <x-ui.button type="submit">Beli</x-ui.button>
-                                    </form>
-                                @else
-                                    <x-ui.button :href="route('login')" variant="outline">Masuk untuk membeli</x-ui.button>
-                                @endauth
-                            @endif
-                        </div>
-                    </div>
-                @empty
-                    <p class="text-sm text-gray-600">Belum ada tiket.</p>
-                @endforelse
-            </section>
         </div>
 
         <aside class="order-1 lg:order-2">

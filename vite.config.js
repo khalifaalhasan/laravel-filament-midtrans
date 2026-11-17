@@ -9,6 +9,9 @@ export default defineConfig({
         }),
     ],
     server: {
+        // Fixed port so this project never attaches to another project's Vite on the default 5173.
+        port: 5180,
+        strictPort: true,
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },
