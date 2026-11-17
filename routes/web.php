@@ -4,10 +4,13 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Webhooks\MidtransWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+
+Route::post('/webhooks/midtrans', MidtransWebhookController::class)->name('webhooks.midtrans');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
